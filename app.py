@@ -2,7 +2,6 @@ import joblib
 import numpy as np
 import pandas as pd
 from flask import Flask, jsonify, render_template, request
-from lightgbm import LGBMClassifier
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import FunctionTransformer, MultiLabelBinarizer
