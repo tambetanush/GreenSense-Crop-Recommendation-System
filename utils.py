@@ -6,11 +6,37 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 def clean_and_clip(df_in):
     df = df_in.copy()
+    # Basic validity checks
+    try:
+        df.loc[df['P'] < 0, 'P'] = np.nan
+    except:
+        pass
+    try:
+        df.loc[df['K'] < 0, 'K'] = np.nan
+    except:
+        pass
+    try:
+        df.loc[df['N'] < 0, 'N'] = np.nan
+    except:
+        pass
+    try:
+        df.loc[df['Env_Temp'] < 0, 'Env_Temp'] = np.nan
+    except:
+        pass
+    try:
+        df.loc[df['DHT_Humidity'] > 100, 'DHT_Humidity'] = np.nan
+    except:
+        pass
+    try:
+        df.loc[df['Soil_Moisture'] > 100, 'Soil_Moisture'] = np.nan
+    except:
+        pass
+    try:
+        df.loc[df['Light'] < 0, 'Light'] = np.nan
+    except:
+        pass
 
-    df.loc[df['N_kg_per_ha'] < 0, 'N_kg_per_ha'] = np.nan
-    df.loc[df['env_temp_c'] < 0, 'env_temp_c'] = np.nan
-    df.loc[df['env_humidity_percent'] > 100, 'env_humidity_percent'] = np.nan
-
+    # Outlier removal using IQR method
     for col in df.select_dtypes(include=['float64', 'int64']).columns:
         Q1 = df[col].quantile(0.25)
         Q3 = df[col].quantile(0.75)
@@ -81,22 +107,29 @@ def feature_engineer(df_in):
     """Add engineered features and return a new DataFrame copy."""
     df = df_in.copy()
 
-    df['N_plus_P'] = df['N_kg_per_ha'] + df['P_kg_per_ha']
-    df['P_over_N'] = df['P_kg_per_ha'] / (df['N_kg_per_ha'] + 1e-6)
-    df['K_over_N'] = df['K_kg_per_ha'] / (df['N_kg_per_ha'] + 1e-6)
+    #  Core nutrient ratios
+    df['N_plus_P'] = df['N'] + df['P']
+    df['P_over_N'] = df['P'] / (df['N'] + 1e-6)
+    df['K_over_N'] = df['K'] / (df['N'] + 1e-6)
 
-    df['env_minus_soil_temp'] = df['env_temp_c'] - df['soil_temp_c']
-    df['env_minus_soil_humidity'] = df['env_humidity_percent'] - \
-        df['soil_humidity_percent']
+    #  Temperature deltas
+    df['env_minus_soil_temp'] = df['Env_Temp'] - df['Soil_Temp']
 
-    df['env_pollution_log'] = np.log1p(df['env_pollution_ppm'])
-    df['light_log'] = np.log1p(df['light_intensity_lux'])
+    # Soil moisture replaces old soil_humidity_percent
+    df['env_minus_soil_humidity'] = df['DHT_Humidity'] - df['Soil_Moisture']
 
-    df['alt_bucket'] = pd.cut(df['altitude_m'], bins=[-1, 100, 300, 600, 1000, 5000],
-                              labels=['very_low', 'low', 'med', 'high', 'very_high'])
+    #  Log transforms
+    df['light_log'] = np.log1p(df['Light'])
+
+    df['alt_bucket'] = pd.cut(
+        df['BMP_Altitude'],
+        bins=[-1, 100, 300, 600, 1000, 5000],
+        labels=['very_low', 'low', 'med', 'high', 'very_high']
+    )
 
     season_map = {s.lower(): i for i, s in enumerate(
-        ['summer', 'monsoon', 'winter', 'spring', 'autumn'])}
+        ['summer', 'monsoon', 'winter']
+    )}
     df['season_enc'] = df['season'].astype(str).str.lower().map(season_map)
 
     return df

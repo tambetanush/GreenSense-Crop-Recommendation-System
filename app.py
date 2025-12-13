@@ -1,89 +1,132 @@
+import os
+
 import joblib
 import numpy as np
 import pandas as pd
+import requests
 from flask import Flask, jsonify, render_template, request
-from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import FunctionTransformer, MultiLabelBinarizer
-from xgboost import XGBClassifier
 
 from utils import RobustLocationImputer, clean_and_clip, feature_engineer
 
-# Initialize the Flask application
 app = Flask(__name__)
 
-# --- Load Machine Learning Assets ---
+
+# LOAD MODELS
+
 try:
-    # Load the pre-trained models and the preprocessor pipeline
     preprocessor = joblib.load("preprocessing_pipeline.joblib")
-    model = joblib.load("best_model_XGBClassifier.joblib")
+    ranker = joblib.load("best_model_XGBRanker.joblib")
     mlb = joblib.load("MLB.joblib")
-    print("Models and pipeline loaded successfully!")
-except FileNotFoundError as e:
-    print(f"Error loading model files: {e}")
-    print("Please ensure the .joblib files are in the correct directory.")
-    preprocessor, model, mlb = None, None, None
+    crop_list = list(mlb.classes_)
 
-# Define the expected numeric columns for type conversion
-NUMERIC_COLS = [
-    'N_kg_per_ha', 'P_kg_per_ha', 'K_kg_per_ha', 'pH', 'soil_temp_c',
-    'soil_humidity_percent', 'env_temp_c', 'env_humidity_percent',
-    'env_pollution_ppm', 'env_gasses_co2_ppm', 'altitude_m',
-    'light_intensity_lux', 'pressure_hpa'
-]
+    print("Model + Preprocessor loaded successfully")
 
-# --- Application Routes ---
+except Exception as e:
+    print("ERROR loading model:", e)
+    preprocessor, ranker, mlb, crop_list = None, None, None, None
 
 
-@app.route('/')
+# RANKING FUNCTION
+def predict_ranked(x_transformed):
+    n_labels = len(crop_list)
+    X_full = []
+
+    for j in range(n_labels):
+        onehot = np.eye(n_labels)[j]
+        combined = np.concatenate([x_transformed[0], onehot])
+        X_full.append(combined)
+
+    X_full = np.array(X_full, dtype=np.float32)
+
+    scores = ranker.predict(X_full)
+    ranked_idx = np.argsort(-scores)
+
+    return ranked_idx, scores
+
+
+def softmax(x):
+    x = np.array(x)
+    e = np.exp(x - np.max(x))
+    return e / e.sum()
+
+
+# ROUTES
+@app.route("/")
 def home():
-    """Renders the main page of the application."""
-    return render_template('index.html')
+    return render_template("index.html")
 
 
-@app.route('/predict', methods=['POST'])
+@app.route("/schema")
+def schema():
+    return jsonify(list(preprocessor.feature_names_in_))
+
+
+@app.route("/predict", methods=["POST"])
 def predict():
-    """Handles the prediction request from the user."""
-    if not all([preprocessor, model, mlb]):
-        return jsonify({"error": "Server is not ready. Models not loaded."}), 500
-
     try:
-        # Get data from the POST request
+        if preprocessor is None:
+            return jsonify({"error": "Model not loaded"}), 500
+
         data = request.get_json()
+        df = pd.DataFrame([data])
 
-        # Convert dictionary to a DataFrame
-        features_df = pd.DataFrame([data])
+        for col in df.columns:
+            if col not in ["district", "location", "season"]:
+                df[col] = pd.to_numeric(df[col], errors="coerce")
 
-        # Ensure numeric columns are of float type, handling potential errors
-        for col in NUMERIC_COLS:
-            features_df[col] = pd.to_numeric(features_df[col], errors='coerce')
+        # Data Cleaning & Feature Engineering
+        x_trans = preprocessor.transform(df).to_numpy()
 
-        # Use the preprocessing pipeline to transform the input data
-        transformed_data = preprocessor.transform(features_df)
+        # Prediction & Ranking
+        ranked_idx, scores = predict_ranked(x_trans)
 
-        # Make a prediction
-        prediction_encoded = model.predict(transformed_data)
+        probs = softmax(scores)
 
-        # Decode the prediction back to crop names
-        prediction_labels = mlb.inverse_transform(prediction_encoded)
+        # threshold-based recommendation
+        THRESHOLD = 0.05
 
-        # Flatten the list of tuples into a simple list of crop names
-        final_prediction = [
-            crop for crops_tuple in prediction_labels for crop in crops_tuple]
+        recommended = [
+            {
+                "crop": crop_list[i],
+                "score": float(scores[i]),
+                "probability": float(probs[i])
+            }
+            for i in ranked_idx
+            if probs[i] >= THRESHOLD
+        ]
 
-        # Return the prediction as a JSON response
-        return jsonify({'prediction': final_prediction})
+        return jsonify({
+            "recommendations": recommended
+        })
 
     except Exception as e:
-        print(f"An error occurred during prediction: {e}")
-        return jsonify({"error": "An error occurred during prediction."}), 400
+        print("PREDICTION ERROR:", e)
+        return jsonify({"error": "Prediction failed", "details": str(e)}), 400
 
 
-# --- Main Execution ---
-# if __name__ == '__main__':
-#     app.run(debug=True)
+# GOOGLE SHEETS ENDPOINT
+GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbyTpysfpeQIB3wNvym2Gk8cx_dPQtLW0cB48RO07K9LpPoWe2hl_iRPpjvWdeVWgmk/exec"
 
+
+@app.route("/latest-readings", methods=["GET"])
+def latest_readings():
+    try:
+        device_id = request.args.get("ID", "1")
+        response = requests.get(GOOGLE_SHEET_API, params={"ID": device_id})
+
+        if response.status_code != 200:
+            return jsonify({"error": "Google Script error"}), 500
+
+        return jsonify({
+            "device_id": device_id,
+            "records": response.json()
+        })
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# RUN SERVER
 if __name__ == "__main__":
-    import os
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port, debug=True)

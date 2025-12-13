@@ -1,0 +1,93 @@
+import joblib
+import numpy as np
+import pandas as pd
+import requests
+from flask import Flask, jsonify, render_template, request
+from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import FunctionTransformer, MultiLabelBinarizer
+from xgboost import XGBClassifier
+
+from utils import RobustLocationImputer, clean_and_clip, feature_engineer
+
+app = Flask(__name__)
+
+try:
+    preprocessor = joblib.load("preprocessing_pipeline.joblib")
+    model = joblib.load("best_model_XGBClassifier.joblib")
+    mlb = joblib.load("MLB.joblib")
+    print("Models and pipeline loaded successfully!")
+except FileNotFoundError as e:
+    print(f"Error loading model files: {e}")
+    print(".joblib files are not in the correct directory.")
+    preprocessor, model, mlb = None, None, None
+
+NUMERIC_COLS = [
+    'N_kg_per_ha', 'P_kg_per_ha', 'K_kg_per_ha', 'pH', 'soil_temp_c',
+    'soil_humidity_percent', 'env_temp_c', 'env_humidity_percent',
+    'env_pollution_ppm', 'env_gasses_co2_ppm', 'altitude_m',
+    'light_intensity_lux', 'pressure_hpa'
+]
+
+
+@app.route('/')
+def home():
+    return render_template('index.html')
+
+
+@app.route('/predict', methods=['POST'])
+def predict():
+    if not all([preprocessor, model, mlb]):
+        return jsonify({"error": "Server is not ready. Models not loaded."}), 500
+    try:
+        data = request.get_json()
+        features_df = pd.DataFrame([data])
+        for col in NUMERIC_COLS:
+            features_df[col] = pd.to_numeric(features_df[col], errors='coerce')
+
+        transformed_data = preprocessor.transform(features_df)
+        prediction_encoded = model.predict(transformed_data)
+        prediction_labels = mlb.inverse_transform(prediction_encoded)
+
+        final_prediction = [
+            crop for crops_tuple in prediction_labels for crop in crops_tuple]
+
+        return jsonify({'prediction': final_prediction})
+
+    except Exception as e:
+        print(f"An error occurred during prediction: {e}")
+        return jsonify({"error": "An error occurred during prediction."}), 400
+
+
+GOOGLE_SHEET_API = "https://script.google.com/macros/s/AKfycbyTpysfpeQIB3wNvym2Gk8cx_dPQtLW0cB48RO07K9LpPoWe2hl_iRPpjvWdeVWgmk/exec"
+
+
+@app.route("/latest-readings", methods=["GET"])
+def latest_readings():
+    try:
+        device_id = request.args.get("ID", "1")   # default ID=1
+
+        # Call Google Script
+        response = requests.get(GOOGLE_SHEET_API, params={"ID": device_id})
+
+        if response.status_code != 200:
+            return jsonify({"error": "Google Script error", "status": response.status_code}), 500
+
+        data = response.json()
+
+        # Google returns an array of rows
+        # If your Apps Script returns raw rows, convert them to dictionaries
+        # But for now, just pass through:
+        return jsonify({"device_id": device_id, "records": data})
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+# --- Main Execution ---
+# if __name__ == '__main__':
+#     app.run(debug=True)
+if __name__ == "__main__":
+    import os
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=True)

@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>GreenSense | Crop Recommendation System</title>
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap"
+            rel="stylesheet" />
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='style.css') }}" />
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    </head>
+    <body>
+        <div
+            class="modal fade"
+            id="welcomeModal"
+            tabindex="-1"
+            aria-labelledby="welcomeModalLabel"
+            aria-hidden="true"
+            data-bs-backdrop="static"
+            data-bs-keyboard="false">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="welcomeModalLabel">
+                            🌱 Welcome to GreenSense
+                        </h5>
+                    </div>
+                    <div class="modal-body">
+                        <p>Your AI-powered agricultural assistant.</p>
+                        <p>
+                            This tool helps you discover the most suitable crops
+                            for your land by analyzing soil and environmental
+                            data. Let's cultivate a smarter future together!
+                        </p>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-primary w-100"
+                            id="startBtn">
+                            Get Started
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div
+            class="modal fade"
+            id="formModal"
+            tabindex="-1"
+            aria-labelledby="formModalLabel"
+            aria-hidden="true"
+            data-bs-backdrop="static"
+            data-bs-keyboard="false">
+            <div class="modal-dialog modal-xl modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="formModalLabel">
+                            📝 Enter Your Farm's Data
+                        </h5>
+                    </div>
+                    <div class="modal-body">
+                        <form id="prediction-form">
+                            <div class="row g-3">
+                                <!-- Nitrogen -->
+                                <div class="col-md-4">
+                                    <label class="form-label"
+                                        >Nitrogen (N) kg/ha
+                                        <small class="text-muted"
+                                            >(10–140)</small
+                                        ></label
+                                    >
+                                    <div class="input-group">
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            class="form-control"
+                                            name="N_kg_per_ha"
+                                            placeholder="Nitrogen (N) kg/ha" />
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary random-fill-btn"
+                                            data-field="N_kg_per_ha"
+                                            title="Fill with random value">
+                                            <i class="fas fa-dice"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Phosphorus -->
+                                <div class="col-md-4">
+                                    <label class="form-label"
+                                        >Phosphorus (P) kg/ha
+                                        <small class="text-muted"
+                                            >(5–80)</small
+                                        ></label
+                                    >
+                                    <div class="input-group">
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            class="form-control"
+                                            name="P_kg_per_ha"
+                                            placeholder="Phosphorus (P) kg/ha" />
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary random-fill-btn"
+                                            data-field="P_kg_per_ha"
+                                            title="Fill with random value">
+                                            <i class="fas fa-dice"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Potassium -->
+                                <div class="col-md-4">
+                                    <label class="form-label"
+                                        >Potassium (K) kg/ha
+                                        <small class="text-muted"
+                                            >(10–200)</small
+                                        ></label
+                                    >
+                                    <div class="input-group">
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            class="form-control"
+                                            name="K_kg_per_ha"
+                                            placeholder="Potassium (K) kg/ha" />
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary random-fill-btn"
+                                            data-field="K_kg_per_ha"
+                                            title="Fill with random value">
+                                            <i class="fas fa-dice"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Soil pH -->
+                                <div class="col-md-4">
+                                    <label class="form-label"
+                                        >Soil pH
+                                        <small class="text-muted"
+                                            >(4.0–9.0)</small
+                                        ></label
+                                    >
+                                    <div class="input-group">
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            class="form-control"
+                                            name="pH"
+                                            placeholder="Soil pH" />
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary random-fill-btn"
+                                            data-field="pH"
+                                            title="Fill with random value">
+                                            <i class="fas fa-dice"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Soil Temp -->
+                                <div class="col-md-4">
+                                    <label class="form-label"
+                                        >Soil Temp (°C)
+                                        <small class="text-muted"
+                                            >(10–45)</small
+                                        ></label
+                                    >
+                                    <div class="input-group">
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            class="form-control"
+                                            name="soil_temp_c"
+                                            placeholder="Soil Temp (°C)" />
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary random-fill-btn"
+                                            data-field="soil_temp_c"
+                                            title="Fill with random value">
+                                            <i class="fas fa-dice"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Soil Humidity -->
+                                <div class="col-md-4">
+                                    <label class="form-label"
+                                        >Soil Humidity (%)
+                                        <small class="text-muted"
+                                            >(20–100)</small
+                                        ></label
+                                    >
+                                    <div class="input-group">
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            class="form-control"
+                                            name="soil_humidity_percent"
+                                            placeholder="Soil Humidity (%)" />
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary random-fill-btn"
+                                            data-field="soil_humidity_percent"
+                                            title="Fill with random value">
+                                            <i class="fas fa-dice"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Air Temp -->
+                                <div class="col-md-4">
+                                    <label class="form-label"
+                                        >Air Temp (°C)
+                                        <small class="text-muted"
+                                            >(10–45)</small
+                                        ></label
+                                    >
+                                    <div class="input-group">
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            class="form-control"
+                                            name="env_temp_c"
+                                            placeholder="Air Temp (°C)" />
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary random-fill-btn"
+                                            data-field="env_temp_c"
+                                            title="Fill with random value">
+                                            <i class="fas fa-dice"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Air Humidity -->
+                                <div class="col-md-4">
+                                    <label class="form-label"
+                                        >Air Humidity (%)
+                                        <small class="text-muted"
+                                            >(20–100)</small
+                                        ></label
+                                    >
+                                    <div class="input-group">
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            class="form-control"
+                                            name="env_humidity_percent"
+                                            placeholder="Air Humidity (%)" />
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary random-fill-btn"
+                                            data-field="env_humidity_percent"
+                                            title="Fill with random value">
+                                            <i class="fas fa-dice"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Air Pollution -->
+                                <div class="col-md-4">
+                                    <label class="form-label"
+                                        >Air Pollution (ppm)
+                                        <small class="text-muted"
+                                            >(0–200)</small
+                                        ></label
+                                    >
+                                    <div class="input-group">
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            class="form-control"
+                                            name="env_pollution_ppm"
+                                            placeholder="Air Pollution (ppm)" />
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary random-fill-btn"
+                                            data-field="env_pollution_ppm"
+                                            title="Fill with random value">
+                                            <i class="fas fa-dice"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- CO2 -->
+                                <div class="col-md-4">
+                                    <label class="form-label"
+                                        >CO₂ (ppm)
+                                        <small class="text-muted"
+                                            >(300–2000)</small
+                                        ></label
+                                    >
+                                    <div class="input-group">
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            class="form-control"
+                                            name="env_gasses_co2_ppm"
+                                            placeholder="CO2 (ppm)" />
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary random-fill-btn"
+                                            data-field="env_gasses_co2_ppm"
+                                            title="Fill with random value">
+                                            <i class="fas fa-dice"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Altitude -->
+                                <div class="col-md-4">
+                                    <label class="form-label"
+                                        >Altitude (m)
+                                        <small class="text-muted"
+                                            >(0–1500)</small
+                                        ></label
+                                    >
+                                    <div class="input-group">
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            class="form-control"
+                                            name="altitude_m"
+                                            placeholder="Altitude (m)" />
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary random-fill-btn"
+                                            data-field="altitude_m"
+                                            title="Fill with random value">
+                                            <i class="fas fa-dice"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Light Intensity -->
+                                <div class="col-md-4">
+                                    <label class="form-label"
+                                        >Light Intensity (lux)
+                                        <small class="text-muted"
+                                            >(1000–150000)</small
+                                        ></label
+                                    >
+                                    <div class="input-group">
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            class="form-control"
+                                            name="light_intensity_lux"
+                                            placeholder="Light Intensity (lux)" />
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary random-fill-btn"
+                                            data-field="light_intensity_lux"
+                                            title="Fill with random value">
+                                            <i class="fas fa-dice"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Pressure -->
+                                <div class="col-md-4">
+                                    <label class="form-label"
+                                        >Pressure (hPa)
+                                        <small class="text-muted"
+                                            >(850–1100)</small
+                                        ></label
+                                    >
+                                    <div class="input-group">
+                                        <input
+                                            type="number"
+                                            step="any"
+                                            class="form-control"
+                                            name="pressure_hpa"
+                                            placeholder="Pressure (hPa)" />
+                                        <button
+                                            type="button"
+                                            class="btn btn-outline-secondary random-fill-btn"
+                                            data-field="pressure_hpa"
+                                            title="Fill with random value">
+                                            <i class="fas fa-dice"></i>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Dropdowns -->
+                                <div class="col-md-4">
+                                    <label class="form-label">District</label>
+                                    <select
+                                        class="form-select"
+                                        name="district"
+                                        required>
+                                        <option value="">
+                                            -- Select District --
+                                        </option>
+                                        <option value="Raigad">Raigad</option>
+                                        <option value="Nashik">Nashik</option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label">Location</label>
+                                    <select
+                                        class="form-select"
+                                        name="location"
+                                        required>
+                                        <option value="">
+                                            -- Select Location --
+                                        </option>
+                                        <option value="Karjat">Karjat</option>
+                                        <option value="Alibag/Mangaon">
+                                            Alibag/Mangaon
+                                        </option>
+                                        <option value="Niphad/Yeola">
+                                            Niphad/Yeola
+                                        </option>
+                                        <option value="Baglan/Kalwan">
+                                            Baglan/Kalwan
+                                        </option>
+                                        <option value="Igatpuri (Ghat Zone)">
+                                            Igatpuri (Ghat Zone)
+                                        </option>
+                                    </select>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <label class="form-label">Season</label>
+                                    <select
+                                        class="form-select"
+                                        name="season"
+                                        required>
+                                        <option value="">
+                                            -- Select Season --
+                                        </option>
+                                        <option value="Summer">Summer</option>
+                                        <option value="Monsoon">Monsoon</option>
+                                        <option value="Winter">Winter</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 mt-4">
+                                <button
+                                    type="button"
+                                    class="btn btn-info"
+                                    id="fillFullFormRandomlyBtn">
+                                    <i class="fas fa-magic"></i> Fill Entire
+                                    Form Randomly
+                                </button>
+                                <button type="submit" class="btn btn-success">
+                                    Predict Suitable Crops
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div
+            class="modal fade"
+            id="predictionModal"
+            tabindex="-1"
+            aria-labelledby="predictionModalLabel"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="predictionModalLabel">
+                            🌾 AI-Generated Recommendations
+                        </h5>
+                    </div>
+                    <div class="modal-body text-center">
+                        <h6>
+                            Based on your data, the following crops are
+                            recommended:
+                        </h6>
+                        <div id="prediction-result" class="mt-3"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button
+                            type="button"
+                            class="btn btn-secondary w-100"
+                            id="startOverBtn">
+                            Analyze Another Plot
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script>
+            document.addEventListener("DOMContentLoaded", function () {
+                // Modal instances
+                const welcomeModal = new bootstrap.Modal(
+                    document.getElementById("welcomeModal")
+                );
+                const formModal = new bootstrap.Modal(
+                    document.getElementById("formModal")
+                );
+                const predictionModal = new bootstrap.Modal(
+                    document.getElementById("predictionModal")
+                );
+
+                // DOM elements
+                const form = document.getElementById("prediction-form");
+                const startBtn = document.getElementById("startBtn");
+                const startOverBtn = document.getElementById("startOverBtn");
+                const predictionResultDiv =
+                    document.getElementById("prediction-result");
+                const predictBtn = form.querySelector('button[type="submit"]');
+                const randomFillButtons =
+                    document.querySelectorAll(".random-fill-btn");
+                const fillFullFormRandomlyBtn = document.getElementById(
+                    "fillFullFormRandomlyBtn"
+                );
+
+                const districtSelect = form.querySelector('[name="district"]');
+                const locationSelect = form.querySelector('[name="location"]');
+                const seasonSelect = form.querySelector('[name="season"]');
+
+                // TRUE dataset column names
+                const FIELD_MAP = {
+                    N_kg_per_ha: "N",
+                    P_kg_per_ha: "P",
+                    K_kg_per_ha: "K",
+                    soil_temp_c: "Soil_Temp",
+                    env_temp_c: "Env_Temp",
+                    soil_humidity_percent: "Soil_Moisture",
+                    env_humidity_percent: "DHT_Humidity",
+                    env_gasses_co2_ppm: "MQ135_CO2",
+                    MQ135_CO: "MQ135_CO",
+                    MQ135_NH3: "MQ135_NH3",
+                    altitude_m: "BMP_Altitude",
+                    pressure_hpa: "BMP_Pressure",
+                    light_intensity_lux: "Light",
+                };
+
+                // Profiles for random generation
+                const profiles = [
+                    {
+                        district: "Raigad",
+                        location: "Karjat",
+                        altitude_range: [35, 45],
+                        pressure_range: [1008, 1012],
+                        ph_range: [5.5, 6.0],
+                        n_dist: { mean: 296, std: 30 },
+                        p_dist: { mean: 9, std: 2 },
+                        k_dist: { mean: 226, std: 25 },
+                        annual_temp_range: [20, 38],
+                        monsoon_humidity_range: [85, 98],
+                        light_range: [20000, 35000],
+                        co2_range: [400, 450],
+                    },
+                    {
+                        district: "Raigad",
+                        location: "Alibag/Mangaon",
+                        altitude_range: [5, 15],
+                        pressure_range: [1009, 1013],
+                        ph_range: [5.5, 6.2],
+                        n_dist: { mean: 290, std: 35 },
+                        p_dist: { mean: 10, std: 3 },
+                        k_dist: { mean: 230, std: 20 },
+                        annual_temp_range: [21, 35],
+                        monsoon_humidity_range: [88, 98],
+                        light_range: [22000, 38000],
+                        co2_range: [410, 460],
+                    },
+                    {
+                        district: "Nashik",
+                        location: "Niphad/Yeola",
+                        altitude_range: [580, 620],
+                        pressure_range: [950, 960],
+                        ph_range: [7.0, 7.8],
+                        n_dist: { mean: 230, std: 25 },
+                        p_dist: { mean: 60, std: 8 },
+                        k_dist: { mean: 260, std: 30 },
+                        annual_temp_range: [12, 44],
+                        monsoon_humidity_range: [70, 85],
+                        light_range: [25000, 40000],
+                        co2_range: [420, 470],
+                    },
+                ];
+
+                // Helpers
+                function randomBetween(min, max, dp = 2) {
+                    return (Math.random() * (max - min) + min).toFixed(dp);
+                }
+
+                function randomGaussian(mean, std, dp = 2) {
+                    let u = 0,
+                        v = 0;
+                    while (u === 0) u = Math.random();
+                    while (v === 0) v = Math.random();
+                    let num =
+                        Math.sqrt(-2.0 * Math.log(u)) *
+                        Math.cos(2 * Math.PI * v);
+                    num = num * std + mean;
+                    return Math.max(0, num).toFixed(dp);
+                }
+
+                function fillRandomField(inputEl) {
+                    const name = inputEl.name;
+
+                    const selectedDistrict = districtSelect.value;
+                    const selectedLocation = locationSelect.value;
+                    const selectedSeason = seasonSelect.value;
+
+                    const profile = profiles.find(
+                        (p) =>
+                            p.district === selectedDistrict &&
+                            p.location === selectedLocation
+                    );
+
+                    let val;
+
+                    switch (name) {
+                        case "N_kg_per_ha":
+                            val = profile
+                                ? randomGaussian(
+                                      profile.n_dist.mean,
+                                      profile.n_dist.std
+                                  )
+                                : randomGaussian(250, 40);
+                            break;
+                        case "P_kg_per_ha":
+                            val = profile
+                                ? randomGaussian(
+                                      profile.p_dist.mean,
+                                      profile.p_dist.std
+                                  )
+                                : randomGaussian(30, 20);
+                            break;
+                        case "K_kg_per_ha":
+                            val = profile
+                                ? randomGaussian(
+                                      profile.k_dist.mean,
+                                      profile.k_dist.std
+                                  )
+                                : randomGaussian(200, 40);
+                            break;
+
+                        case "soil_temp_c":
+                        case "env_temp_c":
+                            let t = profile?.annual_temp_range || [10, 45];
+                            if (selectedSeason === "Summer")
+                                t = [t[0] + 5, t[1]];
+                            if (selectedSeason === "Winter")
+                                t = [t[0], t[1] - 5];
+                            val = randomBetween(...t);
+                            break;
+
+                        case "soil_humidity_percent":
+                        case "env_humidity_percent":
+                            let hr = profile?.monsoon_humidity_range || [
+                                40, 95,
+                            ];
+                            val = randomBetween(...hr, 0);
+                            break;
+
+                        case "env_gasses_co2_ppm":
+                            val = profile
+                                ? randomBetween(...profile.co2_range, 0)
+                                : randomBetween(380, 480, 0);
+                            break;
+
+                        case "altitude_m":
+                            val = profile
+                                ? randomBetween(...profile.altitude_range, 0)
+                                : randomBetween(0, 900, 0);
+                            break;
+                        case "pressure_hpa":
+                            val = profile
+                                ? randomBetween(...profile.pressure_range, 0)
+                                : randomBetween(940, 1015, 0);
+                            break;
+                        case "light_intensity_lux":
+                            val = profile
+                                ? randomBetween(...profile.light_range, 0)
+                                : randomBetween(15000, 40000, 0);
+                            break;
+                    }
+
+                    if (val !== undefined) inputEl.value = val;
+                }
+
+                randomFillButtons.forEach((btn) => {
+                    btn.addEventListener("click", () => {
+                        const input = btn.previousElementSibling;
+                        if (input) fillRandomField(input);
+                    });
+                });
+
+                // Fill entire form button
+                fillFullFormRandomlyBtn.addEventListener("click", () => {
+                    const districts = ["Raigad", "Nashik"];
+                    const seasons = ["Summer", "Monsoon", "Winter"];
+
+                    const d =
+                        districts[Math.floor(Math.random() * districts.length)];
+                    fillField("district", d);
+
+                    const locs = profiles
+                        .filter((p) => p.district === d)
+                        .map((p) => p.location);
+                    const l = locs[Math.floor(Math.random() * locs.length)];
+                    fillField("location", l);
+
+                    const s =
+                        seasons[Math.floor(Math.random() * seasons.length)];
+                    fillField("season", s);
+
+                    form.querySelectorAll('input[type="number"]').forEach(
+                        (input) => fillRandomField(input)
+                    );
+                });
+
+                function fillField(name, value) {
+                    const el = form.querySelector(`[name="${name}"]`);
+                    if (el) {
+                        el.value = value;
+                        el.dispatchEvent(
+                            new Event("change", { bubbles: true })
+                        );
+                    }
+                }
+
+                // Form Submission
+                form.addEventListener("submit", (e) => {
+                    e.preventDefault();
+
+                    predictBtn.disabled = true;
+                    predictBtn.innerHTML =
+                        '<span class="spinner-border spinner-border-sm"></span> Analyzing...';
+
+                    const data = Object.fromEntries(
+                        new FormData(form).entries()
+                    );
+
+                    fetch("/predict", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify(data),
+                    })
+                        .then((r) => r.json())
+                        .then((res) => {
+                            predictionResultDiv.innerHTML = "";
+                            if (res.prediction) {
+                                const list = document.createElement("div");
+                                list.className =
+                                    "d-flex flex-wrap justify-content-center gap-2";
+                                res.prediction.forEach((crop) => {
+                                    const tag = document.createElement("span");
+                                    tag.className =
+                                        "badge bg-success-subtle border border-success-subtle text-success-emphasis rounded-pill fs-6";
+                                    tag.textContent = crop;
+                                    list.appendChild(tag);
+                                });
+                                predictionResultDiv.appendChild(list);
+                            }
+                            formModal.hide();
+                            predictionModal.show();
+                        })
+                        .finally(() => {
+                            predictBtn.disabled = false;
+                            predictBtn.textContent = "Predict Suitable Crops";
+                        });
+                });
+
+                welcomeModal.show();
+                startBtn.addEventListener("click", () => {
+                    welcomeModal.hide();
+                    formModal.show();
+                });
+                startOverBtn.addEventListener("click", () => {
+                    predictionModal.hide();
+                    form.reset();
+                    formModal.show();
+                });
+            });
+        </script>
+    </body>
+</html>
