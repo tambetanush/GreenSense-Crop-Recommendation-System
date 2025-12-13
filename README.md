@@ -202,32 +202,65 @@ POST /predict
 
 ```json
 {
-  "district": "Pune",
-  "season": "Kharif",
-  "soil_moisture": 32.5,
-  "temperature": 29.1,
-  "humidity": 68.0,
-  "ph": 6.7
+  "N": 198.03,
+  "P": 9.17,
+  "K": 175.78,
+  "pH": 6.96,
+  "Soil_Temp": 29.15,
+  "Soil_Moisture": 51.87,
+
+  "Env_Temp": 31.8,
+  "DHT_Humidity": 68.54,
+  "MQ135_CO2": 416.15,
+  "MQ135_CO": 2.35,
+  "MQ135_NH3": 3.92,
+  "Light": 111924.6,
+  "BMP_Altitude": 136.63,
+  "BMP_Pressure": 1008.62,
+
+  "district": "Raigad",
+  "location": "Karjat",
+  "season": "Monsoon"
 }
+
 ```
 
 #### Sample Response
 
 ```json
 {
-  "recommendations": [
-    {
-      "crop": "Rice",
-      "score": 1.92,
-      "probability": 0.41
-    },
-    {
-      "crop": "Maize",
-      "score": 1.21,
-      "probability": 0.23
-    }
-  ]
+  "prediction": [
+    "Rice",
+    "Coconut",
+    "Vari",
+    "Mango",
+    "Finger Millet",
+    "Grapes",
+    "Wheat"
+  ],
+  "top3": [
+    "Rice",
+    "Coconut",
+    "Vari"
+  ],
+  "top5": [
+    "Rice",
+    "Coconut",
+    "Vari",
+    "Mango",
+    "Finger Millet"
+  ],
+  "scores": {
+    "Rice": 0.7503,
+    "Coconut": 0.2321,
+    "Vari": -0.2573,
+    "Mango": -0.4325,
+    "Finger Millet": -0.4443,
+    "Grapes": -1.3191,
+    "Wheat": -1.2349
+  }
 }
+
 ```
 
 ---
