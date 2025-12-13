@@ -299,7 +299,9 @@ http://localhost:5000
 ## 👨‍💻 Author
 
 **Tanush Sudheer Tambe**
+
 Final Year Engineering Student
+
 Specialization: IoT + Machine Learning + Data Science
 
 ---
@@ -307,6 +309,7 @@ Specialization: IoT + Machine Learning + Data Science
 ## 📜 License
 
 This project is licensed under the **MIT License**.
+
 See `LICENSE` file for details.
 
 ---
