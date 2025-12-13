@@ -36,16 +36,6 @@ This is achieved using **XGBRanker**, where each crop is ranked against others b
 
 ---
 
-## 🏗️ System Architecture
-
-![Image](https://www.mdpi.com/applsci/applsci-12-03396/article_deploy/html/images/applsci-12-03396-g007.png?utm_source=chatgpt.com)
-
-![Image](https://www.espressif.com/sites/default/files/agromon3.png?utm_source=chatgpt.com)
-
-![Image](https://www.researchgate.net/publication/371375966/figure/fig5/AS%3A11431281166176043%401686194214336/Machine-Learning-Pipeline.ppm?utm_source=chatgpt.com)
-
-![Image](https://uploads.toptal.io/blog/image/126717/toptal-blog-image-1532952824469-f2a8bde1c3ed12e5eca87956d7c2f272.png?utm_source=chatgpt.com)
-
 ### Pipeline Overview
 
 ```
