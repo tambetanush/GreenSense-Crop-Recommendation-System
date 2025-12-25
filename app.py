@@ -15,7 +15,7 @@ app = Flask(__name__)
 
 try:
     preprocessor = joblib.load("preprocessing_pipeline.joblib")
-    ranker = joblib.load("best_model_XGBRanker.joblib")
+    ranker = joblib.load("best_ranker.joblib")
     mlb = joblib.load("MLB.joblib")
     crop_list = list(mlb.classes_)
 
