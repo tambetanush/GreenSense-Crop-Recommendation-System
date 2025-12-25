@@ -82,14 +82,6 @@ Ranked Crop Recommendations
 
 # Diagrams & Images:
 
-<!-- ![Pinout Diagram](./Soil-Environment%20Analyzer/ESP32%20S3.png)
-
-![Breadboard Implementation 1](./Soil-Environment%20Analyzer/IMG-20251031-WA0018.jpg)
-![Breadboard Implementation 2](./Soil-Environment%20Analyzer/IMG20251225093336.jpg)
-![Breadboard Implementation 3](./Soil-Environment%20Analyzer/IMG20251225093358.jpg)
-![Breadboard Implementation 4](./Soil-Environment%20Analyzer/IMG20251225093404.jpg)
-![Breadboard Implementation 5](./Soil-Environment%20Analyzer/IMG20251225093429.jpg) -->
-
 <h2>Soil + Environment Analyzer Diagram</h2>
 
 <img src="Soil-Environment Analyzer/ESP32 S3.png" width="700">
@@ -99,58 +91,48 @@ Ranked Crop Recommendations
 <table align="center">
   <tr>
     <td align="center" valign="top">
-      <figure style="margin: 0;">
-        <img 
-          src="Soil-Environment Analyzer/IMG20251225093429.jpg"
-          width="350"
-          style="display:block;"
-        />
-        <figcaption style="display:block; width:350px; margin-top:6px;">
-          <b>Breadboard Implementation – View 1</b>
-        </figcaption>
-      </figure>
+      <img 
+        src="Soil-Environment Analyzer/IMG20251225093429.jpg"
+        width="350"
+        style="display:block;"
+      />
+      <div style="width:350px; text-align:center; margin-top:6px;">
+        <b>Breadboard Implementation – View 1</b>
+      </div>
     </td>
     <td align="center" valign="top">
-      <figure style="margin: 0;">
-        <img
-          src="Soil-Environment Analyzer/IMG20251225093358.jpg"
-          width="300"
-          style="display:block;"
-        />
-        <figcaption style="display:block; width:300px; margin-top:6px;">
-          <b>Breadboard Implementation – View 2</b>
-        </figcaption>
-      </figure>
+      <img 
+        src="Soil-Environment Analyzer/IMG20251225093358.jpg"
+        width="300"
+        style="display:block;"
+      />
+      <div style="width:300px; text-align:center; margin-top:6px;">
+        <b>Breadboard Implementation – View 2</b>
+      </div>
     </td>
-
   </tr>
 
   <tr>
     <td align="center" valign="top">
-      <figure style="margin: 0;">
-        <img
-          src="Soil-Environment Analyzer/IMG20251225093336.jpg"
-          width="300"
-          style="display:block;"
-        />
-        <figcaption style="display:block; width:300px; margin-top:6px;">
-          <b>Final Assembly</b>
-        </figcaption>
-      </figure>
+      <img
+        src="Soil-Environment Analyzer/IMG20251225093336.jpg"
+        width="300"
+        style="display:block;"
+      />
+      <div style="width:300px; text-align:center; margin-top:6px;">
+        <b>Final Assembly</b>
+      </div>
     </td>
     <td align="center" valign="top">
-      <figure style="margin: 0;">
-        <img
-          src="Soil-Environment Analyzer/IMG20251225093404.jpg"
-          width="300"
-          style="display:block;"
-        />
-        <figcaption style="display:block; width:300px; margin-top:6px;">
-          <b>ZTS-3002 Soil Sensor</b>
-        </figcaption>
-      </figure>
+      <img
+        src="Soil-Environment Analyzer/IMG20251225093404.jpg"
+        width="300"
+        style="display:block;"
+      />
+      <div style="width:300px; text-align:center; margin-top:6px;">
+        <b>ZTS-3002 Soil Sensor</b>
+      </div>
     </td>
-
   </tr>
 </table>
 
