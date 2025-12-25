@@ -99,42 +99,55 @@ Ranked Crop Recommendations
 <table align="center">
   <tr>
     <td align="center" valign="top">
-      <figure>
+      <figure style="margin: 0;">
         <img 
           src="Soil-Environment Analyzer/IMG20251225093429.jpg"
           width="350"
+          style="display:block;"
         />
-        <figcaption><b>Breadboard Implementation – View 1</b></figcaption>
+        <figcaption style="display:block; width:350px; margin-top:6px;">
+          <b>Breadboard Implementation – View 1</b>
+        </figcaption>
       </figure>
     </td>
     <td align="center" valign="top">
-          <figure>
-        <img 
+      <figure style="margin: 0;">
+        <img
           src="Soil-Environment Analyzer/IMG20251225093358.jpg"
           width="300"
+          style="display:block;"
         />
-        <figcaption><b>Breadboard Implementation – View 2</b></figcaption>
+        <figcaption style="display:block; width:300px; margin-top:6px;">
+          <b>Breadboard Implementation – View 2</b>
+        </figcaption>
       </figure>
     </td>
 
   </tr>
+
   <tr>
     <td align="center" valign="top">
-      <figure>
+      <figure style="margin: 0;">
         <img
           src="Soil-Environment Analyzer/IMG20251225093336.jpg"
           width="300"
+          style="display:block;"
         />
-        <figcaption><b>Final Assembly</b></figcaption>
+        <figcaption style="display:block; width:300px; margin-top:6px;">
+          <b>Final Assembly</b>
+        </figcaption>
       </figure>
     </td>
     <td align="center" valign="top">
-      <figure>
+      <figure style="margin: 0;">
         <img
           src="Soil-Environment Analyzer/IMG20251225093404.jpg"
           width="300"
+          style="display:block;"
         />
-        <figcaption><b>ZTS-3002 Soil Sensor</b></figcaption>
+        <figcaption style="display:block; width:300px; margin-top:6px;">
+          <b>ZTS-3002 Soil Sensor</b>
+        </figcaption>
       </figure>
     </td>
 
