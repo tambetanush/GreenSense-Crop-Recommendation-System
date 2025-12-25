@@ -12,13 +12,13 @@ Unlike traditional classification systems, GreenSense formulates **crop selectio
 
 ## 🚀 Key Highlights
 
-* 📡 **Real-time IoT sensing** using ESP32 and environmental sensors
-* 🧠 **Learning-to-Rank ML approach** using `XGBoost Ranker`
-* 🔬 Combines **synthetic + real sensor data**
-* ⚙️ **Robust feature engineering & preprocessing pipeline**
-* 🌐 **Flask-based inference API** with real-time recommendations
-* 📊 Evaluation using **Hit@K** and **NDCG**
-* 🔗 Live integration with **Google Sheets API** for sensor readings
+-   📡 **Real-time IoT sensing** using ESP32 and environmental sensors
+-   🧠 **Learning-to-Rank ML approach** using `XGBoost Ranker`
+-   🔬 Combines **synthetic + real sensor data**
+-   ⚙️ **Robust feature engineering & preprocessing pipeline**
+-   🌐 **Flask-based inference API** with real-time recommendations
+-   📊 Evaluation using **Hit@K** and **NDCG**
+-   🔗 Live integration with **Google Sheets API** for sensor readings
 
 ---
 
@@ -28,9 +28,9 @@ Most crop recommendation systems treat the problem as **multi-class classificati
 
 **GreenSense instead models this as a ranking problem**, allowing:
 
-* Multiple suitable crops per condition
-* Confidence-aware recommendations
-* Better real-world decision support
+-   Multiple suitable crops per condition
+-   Confidence-aware recommendations
+-   Better real-world decision support
 
 This is achieved using **XGBRanker**, where each crop is ranked against others based on predicted suitability.
 
@@ -58,25 +58,94 @@ Ranked Crop Recommendations
 
 ### Hardware
 
-* ESP32 Microcontroller
-* Soil Moisture Sensor
-* Temperature & Humidity Sensors
-* Environmental Sensors
+-   ESP32 Microcontroller
+-   Soil Moisture Sensor
+-   Temperature & Humidity Sensors
+-   Environmental Sensors
 
 ### Backend & ML
 
-* Python
-* Flask
-* Scikit-Learn
-* XGBoost (XGBRanker)
-* NumPy, Pandas
-* Joblib
+-   Python
+-   Flask
+-   Scikit-Learn
+-   XGBoost (XGBRanker)
+-   NumPy, Pandas
+-   Joblib
 
 ### Data & Integration
 
-* Google Sheets API
-* REST APIs
-* JSON-based inference
+-   Google Sheets API
+-   REST APIs
+-   JSON-based inference
+
+---
+
+# Diagrams & Images:
+
+<!-- ![Pinout Diagram](./Soil-Environment%20Analyzer/ESP32%20S3.png)
+
+![Breadboard Implementation 1](./Soil-Environment%20Analyzer/IMG-20251031-WA0018.jpg)
+![Breadboard Implementation 2](./Soil-Environment%20Analyzer/IMG20251225093336.jpg)
+![Breadboard Implementation 3](./Soil-Environment%20Analyzer/IMG20251225093358.jpg)
+![Breadboard Implementation 4](./Soil-Environment%20Analyzer/IMG20251225093404.jpg)
+![Breadboard Implementation 5](./Soil-Environment%20Analyzer/IMG20251225093429.jpg) -->
+
+<h2>Soil + Environment Analyzer Diagram</h2>
+
+<img src="Soil-Environment Analyzer/ESP32 S3.png" width="700">
+
+<h3>Breadboard Implementations</h3>
+
+<table align="center">
+  <tr>
+    <td align="center" valign="top">
+      <figure>
+        <img 
+          src="Soil-Environment Analyzer/IMG20251225093429.jpg"
+          width="350"
+        />
+        <figcaption><b>Breadboard Implementation – View 1</b></figcaption>
+      </figure>
+    </td>
+    <td align="center" valign="top">
+          <figure>
+        <img 
+          src="Soil-Environment Analyzer/IMG20251225093358.jpg"
+          width="300"
+          style="display: block;"
+        />
+        <figcaption><b>Breadboard Implementation – View 2</b></figcaption>
+      </figure>
+    </td>
+
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <figure>
+        <img
+          src="Soil-Environment Analyzer/IMG20251225093336.jpg"
+          width="300"
+          style="display: block;"
+        />
+        <figcaption><b>Final Assembly</b></figcaption>
+      </figure>
+    </td>
+    <td align="center" valign="top">
+      <figure>
+        <img
+          src="Soil-Environment Analyzer/IMG20251225093404.jpg"
+          width="300"
+          style="display: block;"
+        />
+        <figcaption><b>ZTS-3002 Soil Sensor</b></figcaption>
+      </figure>
+    </td>
+
+  </tr>
+</table>
+
+<h3>Final Assembly Testing</h3>
+<img src="Soil-Environment Analyzer/IMG-20251031-WA0018.jpg" width="700">
 
 ---
 
@@ -88,11 +157,8 @@ GreenSense/
 ├── app.py                         # Flask application (API + inference)
 ├── utils.py                       # Preprocessing & feature engineering utilities
 ├── test.py                        # Local testing script
-├── backup.txt                     # Backup / experiment notes
-├── tempCodeRunnerFile.py          # VS Code temporary file
 │
 ├── requirements.txt               # Python dependencies
-├── Procfile                       # Deployment configuration (Heroku-compatible)
 ├── LICENSE                        # Project license
 ├── README.md                      # Project documentation
 │
@@ -102,15 +168,20 @@ GreenSense/
 │
 ├── synthetic_crop_data.csv        # Synthetic dataset for training
 │
-├── greensense-crop-recommendation.ipynb  # EDA & recommendation experiments
-├── greensense-ml-pipeline.ipynb          # End-to-end ML pipeline notebook
+├── Ranker Notebook/               # Main ML / ranking notebook
+│   └── greensense-crop-recommendation.ipynb
 │
-├── Old Models/                           # Archived / experimental models
-│   ├── best_model_XGBClassifier.joblib
-│   ├── best_model_XGBRanker.joblib
-│   ├── preprocessing_pipeline.joblib
-│   ├── MLB.joblib
-│   └── index.html
+├── Old Models/                    # Archived classification notebook
+│   └── greensense-ml-pipeline.ipynb
+│
+├── Soil-Environment Analyzer/     # IoT hardware & implementation assets
+│   ├── ESP32 S3.png               # ESP32-S3 pinout diagram
+│   ├── IMG-20251031-WA0018.jpg    # Final Assembly Testing
+│   ├── IMG20251225093336.jpg      # Final Assembly
+│   ├── IMG20251225093358.jpg      # Breadboard implementation (view 2)
+│   ├── IMG20251225093404.jpg      # ZTS-3002 Soil Sensor
+│   ├── IMG20251225093429.jpg      # Breadboard implementation (view 1)
+│   └── soil code.ino              # ESP32 firmware code
 │
 ├── templates/
 │   └── index.html                 # Frontend HTML template
@@ -120,7 +191,6 @@ GreenSense/
 │
 └── __pycache__/
     └── utils.cpython-314.pyc      # Python cache files
-
 ```
 
 ---
@@ -129,14 +199,15 @@ GreenSense/
 
 ### 1️⃣ Feature Engineering
 
-* Sensor value clipping and normalization
-* Robust imputation for missing location data
-* Categorical encoding for:
+-   Sensor value clipping and normalization
+-   Robust imputation for missing location data
+-   Categorical encoding for:
 
-  * District
-  * Season
-  * Location
-* Domain-driven feature transformations
+    -   District
+    -   Season
+    -   Location
+
+-   Domain-driven feature transformations
 
 ### 2️⃣ Learning-to-Rank Formulation
 
@@ -150,12 +221,12 @@ The model predicts a **score per crop**, which is later sorted to generate ranki
 
 ### 3️⃣ Ranking Model
 
-* **Model**: `XGBRanker`
-* **Objective**: Pairwise ranking
-* **Evaluation Metrics**:
+-   **Model**: `XGBRanker`
+-   **Objective**: Pairwise ranking
+-   **Evaluation Metrics**:
 
-  * Hit@K
-  * NDCG@K
+    -   Hit@K
+    -   NDCG@K
 
 ---
 
@@ -202,65 +273,53 @@ POST /predict
 
 ```json
 {
-  "N": 198.03,
-  "P": 9.17,
-  "K": 175.78,
-  "pH": 6.96,
-  "Soil_Temp": 29.15,
-  "Soil_Moisture": 51.87,
+    "N": 198.03,
+    "P": 9.17,
+    "K": 175.78,
+    "pH": 6.96,
+    "Soil_Temp": 29.15,
+    "Soil_Moisture": 51.87,
 
-  "Env_Temp": 31.8,
-  "DHT_Humidity": 68.54,
-  "MQ135_CO2": 416.15,
-  "MQ135_CO": 2.35,
-  "MQ135_NH3": 3.92,
-  "Light": 111924.6,
-  "BMP_Altitude": 136.63,
-  "BMP_Pressure": 1008.62,
+    "Env_Temp": 31.8,
+    "DHT_Humidity": 68.54,
+    "MQ135_CO2": 416.15,
+    "MQ135_CO": 2.35,
+    "MQ135_NH3": 3.92,
+    "Light": 111924.6,
+    "BMP_Altitude": 136.63,
+    "BMP_Pressure": 1008.62,
 
-  "district": "Raigad",
-  "location": "Karjat",
-  "season": "Monsoon"
+    "district": "Raigad",
+    "location": "Karjat",
+    "season": "Monsoon"
 }
-
 ```
 
 #### Sample Response
 
 ```json
 {
-  "prediction": [
-    "Rice",
-    "Coconut",
-    "Vari",
-    "Mango",
-    "Finger Millet",
-    "Grapes",
-    "Wheat"
-  ],
-  "top3": [
-    "Rice",
-    "Coconut",
-    "Vari"
-  ],
-  "top5": [
-    "Rice",
-    "Coconut",
-    "Vari",
-    "Mango",
-    "Finger Millet"
-  ],
-  "scores": {
-    "Rice": 0.7503,
-    "Coconut": 0.2321,
-    "Vari": -0.2573,
-    "Mango": -0.4325,
-    "Finger Millet": -0.4443,
-    "Grapes": -1.3191,
-    "Wheat": -1.2349
-  }
+    "prediction": [
+        "Rice",
+        "Coconut",
+        "Vari",
+        "Mango",
+        "Finger Millet",
+        "Grapes",
+        "Wheat"
+    ],
+    "top3": ["Rice", "Coconut", "Vari"],
+    "top5": ["Rice", "Coconut", "Vari", "Mango", "Finger Millet"],
+    "scores": {
+        "Rice": 0.7503,
+        "Coconut": 0.2321,
+        "Vari": -0.2573,
+        "Mango": -0.4325,
+        "Finger Millet": -0.4443,
+        "Grapes": -1.3191,
+        "Wheat": -1.2349
+    }
 }
-
 ```
 
 ---
@@ -309,23 +368,23 @@ http://localhost:5000
 
 ## 🔬 Research & Academic Value
 
-* Demonstrates **learning-to-rank in agriculture**
-* Suitable for **journal or conference submission**
-* Can be extended with:
+-   Demonstrates **learning-to-rank in agriculture**
+-   Suitable for **journal or conference submission**
+-   Can be extended with:
 
-  * Weather forecasts
-  * Satellite imagery
-  * Reinforcement learning
+    -   Weather forecasts
+    -   Satellite imagery
+    -   Reinforcement learning
 
 ---
 
 ## 📌 Future Enhancements
 
-* 📊 Temporal modeling with LSTMs
-* 🌦️ Weather API integration
-* 📱 Mobile app interface
-* 🧠 Personalized farmer profiles
-* ☁️ Cloud deployment (AWS/GCP)
+-   📊 Temporal modeling with LSTMs
+-   🌦️ Weather API integration
+-   📱 Mobile app interface
+-   🧠 Personalized farmer profiles
+-   ☁️ Cloud deployment (AWS/GCP)
 
 ---
 
