@@ -112,7 +112,6 @@ Ranked Crop Recommendations
         <img 
           src="Soil-Environment Analyzer/IMG20251225093358.jpg"
           width="300"
-          style="display: block;"
         />
         <figcaption><b>Breadboard Implementation – View 2</b></figcaption>
       </figure>
@@ -125,7 +124,6 @@ Ranked Crop Recommendations
         <img
           src="Soil-Environment Analyzer/IMG20251225093336.jpg"
           width="300"
-          style="display: block;"
         />
         <figcaption><b>Final Assembly</b></figcaption>
       </figure>
@@ -135,7 +133,6 @@ Ranked Crop Recommendations
         <img
           src="Soil-Environment Analyzer/IMG20251225093404.jpg"
           width="300"
-          style="display: block;"
         />
         <figcaption><b>ZTS-3002 Soil Sensor</b></figcaption>
       </figure>
