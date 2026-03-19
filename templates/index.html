@@ -34,6 +34,29 @@
                 --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
             }
 
+            /* ─── LIGHT THEME ────────────────────────────────────────────── */
+            html.light {
+                --bg: #f2f7f3;
+                --surface: #ffffff;
+                --surface-2: #eaf2ec;
+                --surface-3: #d6e8da;
+                --border: #b8d4c0;
+                --border-dim: #d0e6d6;
+                --accent: #8a6a10;
+                --accent-dim: #b08a28;
+                --accent-pale: #c8a84b28;
+                --green: #2e7d4f;
+                --green-dim: #4caf75;
+                --red: #c0392b;
+                --text: #1a2e1f;
+                --text-muted: #4a7058;
+                --text-dim: #8aaa92;
+                --shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+            }
+            html.light body::before {
+                opacity: 0.12;
+            }
+
             /* ─── RESET ──────────────────────────────────────────────────── */
             *,
             *::before,
@@ -50,9 +73,12 @@
                 background: var(--bg);
                 color: var(--text);
                 font-family: var(--sans);
-                font-size: 14px;
-                line-height: 1.6;
+                font-size: 15.5px;
+                line-height: 1.65;
                 min-height: 100vh;
+                transition:
+                    background 0.25s,
+                    color 0.25s;
             }
 
             /* subtle grid texture */
@@ -78,7 +104,7 @@
                 position: sticky;
                 top: 0;
                 z-index: 100;
-                background: rgba(12, 26, 17, 0.92);
+                background: var(--header-bg, rgba(12, 26, 17, 0.92));
                 backdrop-filter: blur(12px);
                 border-bottom: 1px solid var(--border);
                 padding: 0 32px;
@@ -86,6 +112,16 @@
                 align-items: center;
                 gap: 24px;
                 height: 60px;
+                transition:
+                    background 0.25s,
+                    border-color 0.25s;
+            }
+
+            :root {
+                --header-bg: rgba(12, 26, 17, 0.92);
+            }
+            html.light {
+                --header-bg: rgba(242, 247, 243, 0.92);
             }
             .gs-logo {
                 font-family: var(--serif);
@@ -96,7 +132,7 @@
             }
             .gs-logo span {
                 color: var(--text-muted);
-                font-size: 12px;
+                font-size: 13px;
                 font-family: var(--mono);
                 font-weight: 300;
                 margin-left: 8px;
@@ -110,7 +146,7 @@
             }
             .gs-tab {
                 font-family: var(--mono);
-                font-size: 11px;
+                font-size: 13px;
                 letter-spacing: 0.08em;
                 text-transform: uppercase;
                 padding: 6px 16px;
@@ -169,7 +205,7 @@
             }
             .card-title {
                 font-family: var(--serif);
-                font-size: 17px;
+                font-size: 19px;
                 color: var(--accent);
                 margin-bottom: 16px;
                 display: flex;
@@ -188,7 +224,7 @@
             /* ─── FORM ELEMENTS ──────────────────────────────────────────── */
             .form-label {
                 font-family: var(--mono);
-                font-size: 10px;
+                font-size: 13px;
                 letter-spacing: 0.1em;
                 text-transform: uppercase;
                 color: var(--text-muted);
@@ -199,7 +235,7 @@
                 color: var(--text-dim);
                 text-transform: none;
                 letter-spacing: 0;
-                font-size: 10px;
+                font-size: 13px;
             }
 
             input[type="number"],
@@ -211,7 +247,7 @@
                 border-radius: var(--radius);
                 color: var(--text);
                 font-family: var(--mono);
-                font-size: 13px;
+                font-size: 14px;
                 padding: 8px 12px;
                 outline: none;
                 transition:
@@ -242,7 +278,7 @@
                 color: var(--text-muted);
                 cursor: pointer;
                 padding: 0 10px;
-                font-size: 13px;
+                font-size: 14px;
                 transition: all 0.18s;
             }
             .input-group .dice-btn:hover {
@@ -291,7 +327,7 @@
             /* ─── SECTION LABELS ─────────────────────────────────────────── */
             .section-label {
                 font-family: var(--mono);
-                font-size: 10px;
+                font-size: 13px;
                 letter-spacing: 0.15em;
                 text-transform: uppercase;
                 color: var(--text-muted);
@@ -303,7 +339,7 @@
             /* ─── BUTTONS ────────────────────────────────────────────────── */
             .btn {
                 font-family: var(--mono);
-                font-size: 12px;
+                font-size: 13px;
                 letter-spacing: 0.06em;
                 padding: 9px 20px;
                 border-radius: var(--radius);
@@ -352,7 +388,7 @@
             }
             .btn-sm {
                 padding: 5px 12px;
-                font-size: 11px;
+                font-size: 13px;
             }
             .btn:disabled {
                 opacity: 0.4;
@@ -376,12 +412,12 @@
                 width: 100%;
                 border-collapse: collapse;
                 font-family: var(--mono);
-                font-size: 12px;
+                font-size: 13px;
             }
             th {
                 background: var(--surface-2);
                 color: var(--text-muted);
-                font-size: 10px;
+                font-size: 13px;
                 letter-spacing: 0.08em;
                 text-transform: uppercase;
                 padding: 8px 10px;
@@ -437,14 +473,14 @@
 
             .rec-rank {
                 font-family: var(--mono);
-                font-size: 10px;
+                font-size: 13px;
                 letter-spacing: 0.1em;
                 color: var(--text-muted);
                 margin-bottom: 6px;
             }
             .rec-crop {
                 font-family: var(--serif);
-                font-size: 20px;
+                font-size: 23px;
                 color: var(--text);
                 margin-bottom: 10px;
                 line-height: 1.2;
@@ -475,7 +511,7 @@
             }
             .rec-score-text {
                 font-family: var(--mono);
-                font-size: 11px;
+                font-size: 13px;
                 color: var(--text-muted);
             }
 
@@ -500,7 +536,7 @@
 
             .explain-btn {
                 font-family: var(--mono);
-                font-size: 10px;
+                font-size: 13px;
                 color: var(--text-muted);
                 background: none;
                 border: 1px solid var(--border);
@@ -522,7 +558,7 @@
                 align-items: center;
                 gap: 6px;
                 font-family: var(--mono);
-                font-size: 11px;
+                font-size: 13px;
                 color: var(--text-muted);
                 background: var(--surface-2);
                 border: 1px solid var(--border);
@@ -563,7 +599,7 @@
             }
             .dim-label {
                 font-family: var(--mono);
-                font-size: 10px;
+                font-size: 13px;
                 color: var(--text-muted);
                 letter-spacing: 0.06em;
             }
@@ -580,7 +616,7 @@
             }
             .dim-score {
                 font-family: var(--mono);
-                font-size: 11px;
+                font-size: 13px;
                 color: var(--text);
                 text-align: right;
             }
@@ -612,7 +648,7 @@
             }
             .explain-score-item {
                 font-family: var(--mono);
-                font-size: 11px;
+                font-size: 13px;
             }
             .explain-score-item .label {
                 color: var(--text-muted);
@@ -653,7 +689,7 @@
             }
             .crop-pill-meta {
                 font-family: var(--mono);
-                font-size: 10px;
+                font-size: 13px;
                 color: var(--text-muted);
                 margin-top: 3px;
             }
@@ -683,12 +719,12 @@
             }
             .hist-id {
                 font-family: var(--mono);
-                font-size: 11px;
+                font-size: 13px;
                 color: var(--accent);
             }
             .hist-time {
                 font-family: var(--mono);
-                font-size: 10px;
+                font-size: 13px;
                 color: var(--text-muted);
             }
             .hist-crops {
@@ -714,7 +750,7 @@
             }
             .hist-env-item {
                 font-family: var(--mono);
-                font-size: 10px;
+                font-size: 13px;
                 color: var(--text-muted);
             }
             .hist-env-item span {
@@ -728,7 +764,7 @@
                 right: 24px;
                 z-index: 999;
                 font-family: var(--mono);
-                font-size: 12px;
+                font-size: 13px;
                 padding: 12px 20px;
                 border-radius: var(--radius);
                 background: var(--surface-3);
@@ -773,7 +809,7 @@
                 text-align: center;
                 padding: 40px 20px;
                 font-family: var(--mono);
-                font-size: 12px;
+                font-size: 13px;
                 color: var(--text-dim);
             }
 
@@ -814,6 +850,25 @@
                     History
                 </button>
             </nav>
+            <button
+                id="themeBtn"
+                onclick="toggleTheme()"
+                title="Toggle light/dark theme"
+                style="
+                    margin-left: 12px;
+                    background: var(--surface-2);
+                    border: 1px solid var(--border);
+                    border-radius: var(--radius);
+                    color: var(--text-muted);
+                    cursor: pointer;
+                    font-size: 17px;
+                    padding: 5px 11px;
+                    line-height: 1;
+                    transition: all 0.18s;
+                    flex-shrink: 0;
+                ">
+                🌙
+            </button>
         </header>
 
         <main class="gs-main">
@@ -1298,6 +1353,29 @@
 
         <!-- ═══════════════════ JAVASCRIPT ═══════════════════ -->
         <script>
+            /* ─── THEME TOGGLE ───────────────────────────────────────────── */
+            (function () {
+                if (localStorage.getItem("gs-theme") === "light") {
+                    document.documentElement.classList.add("light");
+                    // btn not yet in DOM here; set after DOMContentLoaded
+                }
+            })();
+
+            function toggleTheme() {
+                const root = document.documentElement;
+                const btn = document.getElementById("themeBtn");
+                const isLight = root.classList.toggle("light");
+                btn.textContent = isLight ? "☀️" : "🌙";
+                localStorage.setItem("gs-theme", isLight ? "light" : "dark");
+            }
+
+            // Sync button icon to saved preference once DOM is ready
+            document.addEventListener("DOMContentLoaded", function () {
+                if (document.documentElement.classList.contains("light")) {
+                    document.getElementById("themeBtn").textContent = "☀️";
+                }
+            });
+
             /* ─── FIELD DEFINITIONS ─────────────────────────────────────── */
             const SOIL_FIELDS = [
                 ["N", "Nitrogen (kg/ha)", [100, 350]],
