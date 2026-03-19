@@ -1,6 +1,6 @@
 # 🌱 GreenSense
 
-### Intelligent Hybrid Crop Recommendation System (2024–2025)
+### Intelligent Hybrid Crop Recommendation System (2024–2026)
 
 ---
 
