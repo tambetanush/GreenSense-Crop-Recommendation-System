@@ -1,0 +1,18 @@
+[
+  {
+    "crop": "Quinoa",
+    "ph_min": 6.0,
+    "ph_max": 7.5,
+    "sun_min": 50000,
+    "sun_max": 90000,
+    "N_req": 140,
+    "P_req": 30,
+    "K_req": 120,
+    "moisture_min": 35,
+    "moisture_max": 60,
+    "temp_min": 15,
+    "temp_max": 25,
+    "alt_bucket": "med",
+    "seasons": "winter,summer"
+  }
+]
