@@ -1,0 +1,2415 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GreenSense — Crop Intelligence</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+
+    <style>
+      /* ─── TOKENS ─────────────────────────────────────────────────── */
+      :root {
+        --bg: #0c1a11;
+        --surface: #122018;
+        --surface-2: #1a2e22;
+        --surface-3: #243d2e;
+        --border: #2e4e3a;
+        --border-dim: #1e3428;
+        --accent: #c8a84b;
+        --accent-dim: #7a6228;
+        --accent-pale: #c8a84b22;
+        --green: #52c47a;
+        --green-dim: #2a6640;
+        --red: #d96a58;
+        --text: #ddeae0;
+        --text-muted: #6d907a;
+        --text-dim: #3d5a46;
+        --mono: "IBM Plex Mono", monospace;
+        --sans: "IBM Plex Sans", sans-serif;
+        --serif: "Playfair Display", serif;
+        --radius: 8px;
+        --radius-lg: 14px;
+        --shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+      }
+
+      /* ─── LIGHT THEME ────────────────────────────────────────────── */
+      html.light {
+        --bg: #f2f7f3;
+        --surface: #ffffff;
+        --surface-2: #eaf2ec;
+        --surface-3: #d6e8da;
+        --border: #b8d4c0;
+        --border-dim: #d0e6d6;
+        --accent: #8a6a10;
+        --accent-dim: #b08a28;
+        --accent-pale: #c8a84b28;
+        --green: #2e7d4f;
+        --green-dim: #4caf75;
+        --red: #c0392b;
+        --text: #1a2e1f;
+        --text-muted: #4a7058;
+        --text-dim: #8aaa92;
+        --shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+      }
+      html.light body::before {
+        opacity: 0.12;
+      }
+
+      /* ─── RESET ──────────────────────────────────────────────────── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        font-size: 15.5px;
+        line-height: 1.65;
+        min-height: 100vh;
+        transition:
+          background 0.25s,
+          color 0.25s;
+      }
+
+      /* subtle grid texture */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(var(--border-dim) 1px, transparent 1px),
+          linear-gradient(90deg, var(--border-dim) 1px, transparent 1px);
+        background-size: 40px 40px;
+        opacity: 0.35;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ─── HEADER ─────────────────────────────────────────────────── */
+      .gs-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        background: var(--header-bg, rgba(12, 26, 17, 0.92));
+        backdrop-filter: blur(12px);
+        border-bottom: 1px solid var(--border);
+        padding: 0 32px;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        height: 60px;
+        transition:
+          background 0.25s,
+          border-color 0.25s;
+      }
+
+      :root {
+        --header-bg: rgba(12, 26, 17, 0.92);
+      }
+      html.light {
+        --header-bg: rgba(242, 247, 243, 0.92);
+      }
+      .gs-logo {
+        font-family: var(--serif);
+        font-size: 22px;
+        color: var(--accent);
+        letter-spacing: 0.02em;
+        white-space: nowrap;
+      }
+      .gs-logo span {
+        color: var(--text-muted);
+        font-size: 13px;
+        font-family: var(--mono);
+        font-weight: 300;
+        margin-left: 8px;
+      }
+
+      /* ─── TABS ───────────────────────────────────────────────────── */
+      .gs-tabs {
+        display: flex;
+        gap: 4px;
+        margin-left: auto;
+      }
+      .gs-tab {
+        font-family: var(--mono);
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 6px 16px;
+        border-radius: var(--radius);
+        border: 1px solid transparent;
+        background: transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.18s;
+      }
+      .gs-tab:hover {
+        color: var(--text);
+        background: var(--surface-2);
+      }
+      .gs-tab.active {
+        color: var(--accent);
+        background: var(--accent-pale);
+        border-color: var(--accent-dim);
+      }
+
+      /* ─── LAYOUT ─────────────────────────────────────────────────── */
+      .gs-main {
+        position: relative;
+        z-index: 1;
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 32px 24px;
+      }
+
+      .gs-section {
+        display: none;
+        animation: fadeUp 0.3s ease;
+      }
+      .gs-section.active {
+        display: block;
+      }
+
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* ─── CARDS ──────────────────────────────────────────────────── */
+      .card {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        margin-bottom: 20px;
+      }
+      .card-title {
+        font-family: var(--serif);
+        font-size: 19px;
+        color: var(--accent);
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .card-title::before {
+        content: "";
+        display: inline-block;
+        width: 3px;
+        height: 18px;
+        background: var(--accent);
+        border-radius: 2px;
+      }
+
+      /* ─── FORM ELEMENTS ──────────────────────────────────────────── */
+      .form-label {
+        font-family: var(--mono);
+        font-size: 13px;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 5px;
+        display: block;
+      }
+      .form-label small {
+        color: var(--text-dim);
+        text-transform: none;
+        letter-spacing: 0;
+        font-size: 13px;
+      }
+
+      input[type="number"],
+      input[type="text"],
+      select {
+        width: 100%;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 14px;
+        padding: 8px 12px;
+        outline: none;
+        transition:
+          border-color 0.18s,
+          background 0.18s;
+      }
+      input:focus,
+      select:focus {
+        border-color: var(--accent-dim);
+        background: var(--surface-3);
+      }
+      select option {
+        background: var(--surface-2);
+      }
+
+      .input-group {
+        display: flex;
+        gap: 0;
+      }
+      .input-group input {
+        border-radius: var(--radius) 0 0 var(--radius);
+      }
+      .input-group .dice-btn {
+        background: var(--surface-3);
+        border: 1px solid var(--border);
+        border-left: none;
+        border-radius: 0 var(--radius) var(--radius) 0;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 0 10px;
+        font-size: 14px;
+        transition: all 0.18s;
+      }
+      .input-group .dice-btn:hover {
+        background: var(--accent-pale);
+        color: var(--accent);
+      }
+
+      .flash-green {
+        border-color: var(--green) !important;
+        background: rgba(82, 196, 122, 0.08) !important;
+      }
+
+      /* ─── GRID ───────────────────────────────────────────────────── */
+      .grid-2 {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 24px;
+      }
+      .grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+      .grid-4 {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+      }
+      .grid-auto {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 12px;
+      }
+
+      @media (max-width: 768px) {
+        .grid-2,
+        .grid-3,
+        .grid-4 {
+          grid-template-columns: 1fr;
+        }
+        .gs-tabs {
+          display: none;
+        }
+      }
+
+      /* ─── SECTION LABELS ─────────────────────────────────────────── */
+      .section-label {
+        font-family: var(--mono);
+        font-size: 13px;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 14px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border-dim);
+      }
+
+      /* ─── BUTTONS ────────────────────────────────────────────────── */
+      .btn {
+        font-family: var(--mono);
+        font-size: 13px;
+        letter-spacing: 0.06em;
+        padding: 9px 20px;
+        border-radius: var(--radius);
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all 0.18s;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #0c1a11;
+        font-weight: 500;
+      }
+      .btn-primary:hover {
+        background: #d9b85a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(200, 168, 75, 0.3);
+      }
+      .btn-secondary {
+        background: var(--surface-2);
+        color: var(--text);
+        border-color: var(--border);
+      }
+      .btn-secondary:hover {
+        background: var(--surface-3);
+        border-color: var(--accent-dim);
+      }
+      .btn-danger {
+        background: transparent;
+        color: var(--red);
+        border-color: rgba(217, 106, 88, 0.3);
+      }
+      .btn-danger:hover {
+        background: rgba(217, 106, 88, 0.1);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-muted);
+        border-color: var(--border);
+      }
+      .btn-ghost:hover {
+        color: var(--text);
+        background: var(--surface-2);
+      }
+      .btn-sm {
+        padding: 5px 12px;
+        font-size: 13px;
+      }
+      .btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none !important;
+      }
+
+      .btn-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 20px;
+      }
+
+      /* ─── READINGS TABLE ─────────────────────────────────────────── */
+      .readings-table-wrap {
+        overflow-x: auto;
+        margin-top: 4px;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-family: var(--mono);
+        font-size: 13px;
+      }
+      th {
+        background: var(--surface-2);
+        color: var(--text-muted);
+        font-size: 13px;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 8px 10px;
+        border-bottom: 1px solid var(--border);
+        white-space: nowrap;
+        text-align: left;
+      }
+      td {
+        padding: 9px 10px;
+        border-bottom: 1px solid var(--border-dim);
+        color: var(--text);
+        white-space: nowrap;
+      }
+      tr:hover td {
+        background: var(--surface-2);
+      }
+      tr:last-child td {
+        border-bottom: none;
+      }
+
+      /* ─── RECOMMENDATION RESULTS ─────────────────────────────────── */
+      .rec-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+        gap: 14px;
+        margin-top: 8px;
+      }
+
+      .rec-card {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 18px;
+        transition:
+          transform 0.18s,
+          border-color 0.18s;
+        animation: cardPop 0.35s ease backwards;
+      }
+      .rec-card:hover {
+        transform: translateY(-2px);
+        border-color: var(--accent-dim);
+      }
+      @keyframes cardPop {
+        from {
+          opacity: 0;
+          transform: translateY(14px) scale(0.97);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+        }
+      }
+
+      .rec-rank {
+        font-family: var(--mono);
+        font-size: 13px;
+        letter-spacing: 0.1em;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+      }
+      .rec-crop {
+        font-family: var(--serif);
+        font-size: 23px;
+        color: var(--text);
+        margin-bottom: 10px;
+        line-height: 1.2;
+      }
+
+      .rec-score-bar {
+        height: 4px;
+        background: var(--surface-3);
+        border-radius: 2px;
+        overflow: hidden;
+        margin-bottom: 10px;
+      }
+      .rec-score-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--green-dim), var(--green));
+        border-radius: 2px;
+        transition: width 0.6s ease;
+      }
+
+      .rec-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .rec-score-text {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+
+      .source-badge {
+        font-family: var(--mono);
+        font-size: 9px;
+        letter-spacing: 0.06em;
+        padding: 2px 7px;
+        border-radius: 20px;
+        font-weight: 500;
+      }
+      .source-ml {
+        background: rgba(82, 196, 122, 0.15);
+        color: var(--green);
+        border: 1px solid rgba(82, 196, 122, 0.25);
+      }
+      .source-cb {
+        background: rgba(200, 168, 75, 0.15);
+        color: var(--accent);
+        border: 1px solid rgba(200, 168, 75, 0.25);
+      }
+
+      .explain-btn {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--text-muted);
+        background: none;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 4px 10px;
+        cursor: pointer;
+        transition: all 0.18s;
+        margin-top: 10px;
+        width: 100%;
+      }
+      .explain-btn:hover {
+        border-color: var(--accent-dim);
+        color: var(--accent);
+      }
+
+      /* record id chip */
+      .record-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--text-muted);
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: 20px;
+        padding: 3px 12px;
+        margin-top: 14px;
+      }
+      .record-chip span {
+        color: var(--accent);
+      }
+
+      /* ─── EXPLAIN PANEL ──────────────────────────────────────────── */
+      .explain-panel {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 20px;
+        margin-top: 16px;
+        display: none;
+      }
+      .explain-panel.open {
+        display: block;
+        animation: fadeUp 0.25s ease;
+      }
+      .explain-panel h4 {
+        font-family: var(--serif);
+        font-size: 16px;
+        color: var(--accent);
+        margin-bottom: 14px;
+      }
+
+      .dim-row {
+        display: grid;
+        grid-template-columns: 90px 1fr 50px;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+      }
+      .dim-label {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--text-muted);
+        letter-spacing: 0.06em;
+      }
+      .dim-bar-wrap {
+        background: var(--surface-3);
+        border-radius: 2px;
+        height: 5px;
+        overflow: hidden;
+      }
+      .dim-bar-fill {
+        height: 100%;
+        border-radius: 2px;
+        transition: width 0.5s ease;
+      }
+      .dim-score {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--text);
+        text-align: right;
+      }
+
+      .score-0 {
+        background: var(--red);
+      }
+      .score-25 {
+        background: #d9874a;
+      }
+      .score-50 {
+        background: var(--accent);
+      }
+      .score-75 {
+        background: #7ecf5a;
+      }
+      .score-100 {
+        background: var(--green);
+      }
+
+      .explain-scores {
+        display: flex;
+        gap: 16px;
+        flex-wrap: wrap;
+        margin-bottom: 16px;
+        padding: 12px;
+        background: var(--surface-3);
+        border-radius: var(--radius);
+      }
+      .explain-score-item {
+        font-family: var(--mono);
+        font-size: 13px;
+      }
+      .explain-score-item .label {
+        color: var(--text-muted);
+        margin-right: 6px;
+      }
+      .explain-score-item .value {
+        color: var(--accent);
+      }
+
+      /* ─── REGISTER FORM ──────────────────────────────────────────── */
+      .field-group {
+        margin-bottom: 14px;
+      }
+      .range-inputs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+      }
+
+      /* ─── CROP REGISTRY ──────────────────────────────────────────── */
+      .crop-pill {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 14px 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        transition: border-color 0.18s;
+      }
+      .crop-pill:hover {
+        border-color: var(--accent-dim);
+      }
+      .crop-pill-name {
+        font-family: var(--serif);
+        font-size: 16px;
+        color: var(--text);
+      }
+      .crop-pill-meta {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--text-muted);
+        margin-top: 3px;
+      }
+      .crop-pill-actions {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+
+      /* ─── HISTORY ────────────────────────────────────────────────── */
+      .hist-item {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 16px 20px;
+        margin-bottom: 10px;
+        cursor: pointer;
+        transition: border-color 0.18s;
+      }
+      .hist-item:hover {
+        border-color: var(--accent-dim);
+      }
+      .hist-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+      }
+      .hist-id {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--accent);
+      }
+      .hist-time {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+      .hist-crops {
+        font-family: var(--serif);
+        font-size: 15px;
+        color: var(--text);
+        margin-top: 6px;
+      }
+      .hist-detail {
+        display: none;
+        margin-top: 14px;
+        padding-top: 14px;
+        border-top: 1px solid var(--border-dim);
+      }
+      .hist-detail.open {
+        display: block;
+        animation: fadeUp 0.2s ease;
+      }
+      .hist-env-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .hist-env-item {
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+      .hist-env-item span {
+        color: var(--text);
+      }
+
+      /* ─── TOAST ──────────────────────────────────────────────────── */
+      #toast {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        z-index: 999;
+        font-family: var(--mono);
+        font-size: 13px;
+        padding: 12px 20px;
+        border-radius: var(--radius);
+        background: var(--surface-3);
+        border: 1px solid var(--border);
+        color: var(--text);
+        box-shadow: var(--shadow);
+        transform: translateY(60px);
+        opacity: 0;
+        transition: all 0.3s ease;
+        pointer-events: none;
+      }
+      #toast.show {
+        transform: translateY(0);
+        opacity: 1;
+      }
+      #toast.toast-ok {
+        border-color: var(--green);
+        color: var(--green);
+      }
+      #toast.toast-err {
+        border-color: var(--red);
+        color: var(--red);
+      }
+
+      /* ─── LOADING ────────────────────────────────────────────────── */
+      .spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        border: 2px solid var(--border);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.7s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        font-family: var(--mono);
+        font-size: 13px;
+        color: var(--text-dim);
+      }
+
+      /* ─── MOBILE NAV ─────────────────────────────────────────────── */
+      .mobile-tabs {
+        display: none;
+        overflow-x: auto;
+        padding: 12px 0;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      @media (max-width: 768px) {
+        .mobile-tabs {
+          display: flex;
+        }
+        .gs-main {
+          padding: 16px 14px;
+        }
+      }
+
+      /* ─── USERS TAB ──────────────────────────────────────────── */
+      .user-row td {
+        vertical-align: middle;
+      }
+      .role-badge {
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 600;
+        letter-spacing: 0.06em;
+        padding: 2px 9px;
+        border-radius: 20px;
+        text-transform: uppercase;
+      }
+      .role-admin {
+        background: rgba(200, 168, 75, 0.15);
+        color: var(--accent);
+        border: 1px solid rgba(200, 168, 75, 0.3);
+      }
+      .role-user {
+        background: rgba(82, 196, 122, 0.12);
+        color: var(--green);
+        border: 1px solid rgba(82, 196, 122, 0.25);
+      }
+      .status-badge {
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 500;
+        padding: 2px 9px;
+        border-radius: 20px;
+        text-transform: uppercase;
+      }
+      .status-approved {
+        background: rgba(82, 196, 122, 0.12);
+        color: var(--green);
+        border: 1px solid rgba(82, 196, 122, 0.25);
+      }
+      .status-pending {
+        background: rgba(200, 168, 75, 0.1);
+        color: var(--accent);
+        border: 1px solid rgba(200, 168, 75, 0.25);
+      }
+      .action-row {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+
+      /* Pending approval card */
+      .pending-card {
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-left: 3px solid var(--accent);
+        border-radius: var(--radius-lg);
+        padding: 14px 18px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 10px;
+        flex-wrap: wrap;
+      }
+      .pending-card-info {
+        line-height: 1.5;
+      }
+      .pending-name {
+        font-family: var(--serif);
+        font-size: 16px;
+        color: var(--text);
+      }
+      .pending-email {
+        font-family: var(--mono);
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+      .pending-date {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text-dim);
+        margin-top: 2px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- ═══════════════════ HEADER ═══════════════════ -->
+    <header class="gs-header">
+      <div class="gs-logo">GreenSense <span>v2 · hybrid</span></div>
+      <nav class="gs-tabs">
+        <button class="gs-tab active" onclick="switchTab('recommend')">
+          Recommend
+        </button>
+        <button
+          class="gs-tab admin-only"
+          onclick="switchTab('register')"
+          style="display: none"
+        >
+          Register Crop
+        </button>
+        <button
+          class="gs-tab admin-only"
+          onclick="switchTab('registry')"
+          style="display: none"
+        >
+          Registry
+        </button>
+        <button
+          class="gs-tab admin-only"
+          onclick="switchTab('history')"
+          style="display: none"
+        >
+          History
+        </button>
+        <button
+          class="gs-tab admin-only"
+          onclick="switchTab('users')"
+          style="display: none"
+        >
+          Users
+        </button>
+      </nav>
+      <div
+        id="userInfo"
+        style="
+          display: none;
+          margin-left: auto;
+          align-items: center;
+          gap: 10px;
+          font-family: var(--mono);
+          font-size: 13px;
+          color: var(--text-muted);
+        "
+      >
+        <span
+          id="userEmailBadge"
+          style="
+            background: var(--surface-2);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 3px 12px;
+            font-size: 12px;
+          "
+        ></span>
+        <button
+          onclick="doSignOut()"
+          style="
+            background: none;
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            color: var(--text-muted);
+            cursor: pointer;
+            font-family: var(--mono);
+            font-size: 12px;
+            padding: 4px 12px;
+            transition: all 0.18s;
+          "
+          onmouseover="
+            this.style.borderColor = 'var(--red)';
+            this.style.color = 'var(--red)';
+          "
+          onmouseout="
+            this.style.borderColor = 'var(--border)';
+            this.style.color = 'var(--text-muted)';
+          "
+        >
+          Sign out
+        </button>
+      </div>
+      <button
+        id="themeBtn"
+        onclick="toggleTheme()"
+        title="Toggle light/dark theme"
+        style="
+          margin-left: 12px;
+          background: var(--surface-2);
+          border: 1px solid var(--border);
+          border-radius: var(--radius);
+          color: var(--text-muted);
+          cursor: pointer;
+          font-size: 17px;
+          padding: 5px 11px;
+          line-height: 1;
+          transition: all 0.18s;
+          flex-shrink: 0;
+        "
+      >
+        🌙
+      </button>
+    </header>
+
+    <main class="gs-main">
+      <!-- mobile tab row -->
+      <div class="mobile-tabs">
+        <button class="gs-tab active" onclick="switchTab('recommend')">
+          Recommend
+        </button>
+        <button
+          class="gs-tab admin-only"
+          onclick="switchTab('register')"
+          style="display: none"
+        >
+          Register Crop
+        </button>
+        <button
+          class="gs-tab admin-only"
+          onclick="switchTab('registry')"
+          style="display: none"
+        >
+          Registry
+        </button>
+        <button
+          class="gs-tab admin-only"
+          onclick="switchTab('history')"
+          style="display: none"
+        >
+          History
+        </button>
+        <button
+          class="gs-tab admin-only"
+          onclick="switchTab('users')"
+          style="display: none"
+        >
+          Users
+        </button>
+      </div>
+
+      <!-- ═══════════════ TAB 1: RECOMMEND ═══════════════ -->
+      <section class="gs-section active" id="tab-recommend">
+        <!-- Sensor readings -->
+        <div class="card">
+          <div class="card-title">Live Sensor Readings</div>
+          <button class="btn btn-secondary btn-sm" onclick="fetchReadings()">
+            <span
+              id="fetchSpinner"
+              style="display: none"
+              class="spinner"
+            ></span>
+            Fetch Latest 3 Readings
+          </button>
+          <div class="readings-table-wrap" style="margin-top: 14px">
+            <table id="readingsTable">
+              <thead>
+                <tr>
+                  <th>Use</th>
+                  <th>Env_Temp</th>
+                  <th>Pressure</th>
+                  <th>Altitude</th>
+                  <th>Light</th>
+                  <th>Humidity</th>
+                  <th>CO₂</th>
+                  <th>CO</th>
+                  <th>NH₃</th>
+                  <th>Moisture</th>
+                  <th>Soil_Temp</th>
+                  <th>pH</th>
+                  <th>N</th>
+                  <th>P</th>
+                  <th>K</th>
+                </tr>
+              </thead>
+              <tbody id="readingsTbody">
+                <tr>
+                  <td colspan="15" class="empty-state">
+                    Press "Fetch" to load latest sensor data.
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Input form -->
+        <div class="card">
+          <div class="card-title">Farm Input Data</div>
+          <form id="predictForm">
+            <div class="grid-2">
+              <!-- LEFT: SOIL -->
+              <div>
+                <div class="section-label">Soil Parameters</div>
+                <div id="soilInputs"></div>
+
+                <div style="margin-top: 14px">
+                  <div class="section-label">Location &amp; Season</div>
+                  <div class="field-group">
+                    <label class="form-label">District</label>
+                    <select name="district" required>
+                      <option value="">Select district</option>
+                      <option>Raigad</option>
+                      <option>Nashik</option>
+                    </select>
+                  </div>
+                  <div class="field-group">
+                    <label class="form-label">Location</label>
+                    <select name="location" required>
+                      <option value="">Select location</option>
+                      <option>Karjat</option>
+                      <option>Alibag/Mangaon</option>
+                      <option>Niphad/Yeola</option>
+                      <option>Baglan/Kalwan</option>
+                      <option>Igatpuri (Ghat Zone)</option>
+                    </select>
+                  </div>
+                  <div class="field-group">
+                    <label class="form-label">Season</label>
+                    <select name="season" required>
+                      <option value="">Select season</option>
+                      <option>Summer</option>
+                      <option>Monsoon</option>
+                      <option>Winter</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              <!-- RIGHT: ENV -->
+              <div>
+                <div class="section-label">Environment &amp; Atmosphere</div>
+                <div id="envInputs"></div>
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button
+                type="button"
+                class="btn btn-ghost"
+                onclick="randomizeAll()"
+              >
+                🎲 Randomize All
+              </button>
+              <button type="submit" class="btn btn-primary" id="submitBtn">
+                <span
+                  id="submitSpinner"
+                  style="display: none"
+                  class="spinner"
+                ></span>
+                Generate Recommendations
+              </button>
+              <div
+                style="
+                  margin-left: auto;
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                "
+              >
+                <label class="form-label" style="margin: 0">Top K</label>
+                <select id="topKSelect" style="width: 70px">
+                  <option value="3">3</option>
+                  <option value="5" selected>5</option>
+                  <option value="7">7</option>
+                  <option value="10">10</option>
+                </select>
+              </div>
+            </div>
+          </form>
+        </div>
+
+        <!-- Results -->
+        <div class="card" id="resultCard" style="display: none">
+          <div class="card-title">Recommendations</div>
+          <div id="recGrid" class="rec-grid"></div>
+          <div id="recordChip"></div>
+        </div>
+
+        <!-- Explain panel -->
+        <div class="explain-panel" id="explainPanel">
+          <h4 id="explainTitle">Crop Analysis</h4>
+          <div class="explain-scores" id="explainScores"></div>
+          <div id="explainDims"></div>
+        </div>
+      </section>
+
+      <!-- ═══════════════ TAB 2: REGISTER CROP ═══════════════ -->
+      <section class="gs-section" id="tab-register">
+        <div class="card" style="max-width: 680px; margin: 0 auto">
+          <div class="card-title">Register New Crop</div>
+          <p
+            style="
+              font-size: 12px;
+              color: var(--text-muted);
+              margin-bottom: 20px;
+              font-family: var(--mono);
+            "
+          >
+            Add a crop the ML model has not seen. It will immediately be
+            available via the content-based path. All sunlight values must be in
+            <strong style="color: var(--accent)">lux</strong> — not hours.
+          </p>
+
+          <form id="registerForm">
+            <div class="field-group">
+              <label class="form-label">Crop Name</label>
+              <input
+                type="text"
+                name="crop_name"
+                placeholder="e.g. Quinoa"
+                required
+              />
+            </div>
+
+            <div class="section-label" style="margin-top: 18px">pH Range</div>
+            <div class="range-inputs">
+              <div class="field-group">
+                <label class="form-label">pH Min</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  name="ph_min"
+                  placeholder="5.5"
+                  required
+                />
+              </div>
+              <div class="field-group">
+                <label class="form-label">pH Max</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  name="ph_max"
+                  placeholder="7.5"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="section-label" style="margin-top: 4px">
+              Sunlight Range (lux)
+            </div>
+            <div class="range-inputs">
+              <div class="field-group">
+                <label class="form-label">Sun Min (lux)</label>
+                <input
+                  type="number"
+                  name="sun_min"
+                  placeholder="50000"
+                  required
+                />
+              </div>
+              <div class="field-group">
+                <label class="form-label">Sun Max (lux)</label>
+                <input
+                  type="number"
+                  name="sun_max"
+                  placeholder="90000"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="section-label" style="margin-top: 4px">
+              Nutrient Requirements (kg/ha)
+            </div>
+            <div class="grid-3">
+              <div class="field-group">
+                <label class="form-label">N req</label>
+                <input type="number" name="N_req" placeholder="140" required />
+              </div>
+              <div class="field-group">
+                <label class="form-label">P req</label>
+                <input type="number" name="P_req" placeholder="30" required />
+              </div>
+              <div class="field-group">
+                <label class="form-label">K req</label>
+                <input type="number" name="K_req" placeholder="120" required />
+              </div>
+            </div>
+
+            <div class="section-label" style="margin-top: 4px">
+              Soil Moisture Range (%)
+            </div>
+            <div class="range-inputs">
+              <div class="field-group">
+                <label class="form-label">Moisture Min (%)</label>
+                <input
+                  type="number"
+                  name="moisture_min"
+                  placeholder="35"
+                  required
+                />
+              </div>
+              <div class="field-group">
+                <label class="form-label">Moisture Max (%)</label>
+                <input
+                  type="number"
+                  name="moisture_max"
+                  placeholder="60"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="section-label" style="margin-top: 4px">
+              Temperature Range (°C)
+            </div>
+            <div class="range-inputs">
+              <div class="field-group">
+                <label class="form-label">Temp Min (°C)</label>
+                <input
+                  type="number"
+                  name="temp_min"
+                  placeholder="15"
+                  required
+                />
+              </div>
+              <div class="field-group">
+                <label class="form-label">Temp Max (°C)</label>
+                <input
+                  type="number"
+                  name="temp_max"
+                  placeholder="25"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="grid-2" style="margin-top: 4px">
+              <div class="field-group">
+                <label class="form-label">Altitude Bucket</label>
+                <select name="alt_bucket" required>
+                  <option value="">Select</option>
+                  <option value="very_low">very_low (≤100 m)</option>
+                  <option value="low">low (100–300 m)</option>
+                  <option value="med" selected>med (300–600 m)</option>
+                  <option value="high">high (600–1000 m)</option>
+                  <option value="very_high">very_high (&gt;1000 m)</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label class="form-label">Suitable Seasons</label>
+                <input
+                  type="text"
+                  name="seasons"
+                  placeholder="winter,summer"
+                  required
+                />
+              </div>
+            </div>
+
+            <div class="btn-row">
+              <button type="submit" class="btn btn-primary" id="registerBtn">
+                <span
+                  id="registerSpinner"
+                  style="display: none"
+                  class="spinner"
+                ></span>
+                Register Crop
+              </button>
+              <button type="reset" class="btn btn-ghost">Clear</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- ═══════════════ TAB 3: REGISTRY ═══════════════ -->
+      <section class="gs-section" id="tab-registry">
+        <div class="card">
+          <div class="card-title">Registered Crops</div>
+          <div style="display: flex; gap: 10px; margin-bottom: 16px">
+            <input
+              type="text"
+              id="registrySearch"
+              placeholder="Search crops…"
+              style="max-width: 240px"
+              oninput="loadRegistry()"
+            />
+            <button class="btn btn-secondary btn-sm" onclick="loadRegistry()">
+              Refresh
+            </button>
+          </div>
+          <div id="registryList">
+            <div class="empty-state">Loading…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════ TAB 4: HISTORY ═══════════════ -->
+      <section class="gs-section" id="tab-history">
+        <div class="card">
+          <div class="card-title">Recommendation History</div>
+          <div
+            style="
+              display: flex;
+              gap: 10px;
+              align-items: center;
+              flex-wrap: wrap;
+              margin-bottom: 16px;
+            "
+          >
+            <div style="display: flex; gap: 8px; align-items: center">
+              <label class="form-label" style="margin: 0; white-space: nowrap"
+                >From</label
+              >
+              <input type="date" id="histFrom" style="width: 150px" />
+            </div>
+            <div style="display: flex; gap: 8px; align-items: center">
+              <label class="form-label" style="margin: 0">To</label>
+              <input type="date" id="histTo" style="width: 150px" />
+            </div>
+            <button class="btn btn-secondary btn-sm" onclick="loadHistory()">
+              Filter
+            </button>
+            <button
+              class="btn btn-secondary btn-sm"
+              onclick="loadHistory(true)"
+            >
+              Refresh
+            </button>
+            <button
+              class="btn btn-danger btn-sm"
+              style="margin-left: auto"
+              onclick="clearHistory()"
+            >
+              Clear All
+            </button>
+          </div>
+          <div id="historyList">
+            <div class="empty-state">Loading…</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ═══════════════ TAB 5: USERS ═══════════════ -->
+      <section class="gs-section" id="tab-users">
+        <!-- Pending Approvals -->
+        <div class="card">
+          <div class="card-title">Pending Approvals</div>
+          <div id="pendingList">
+            <div class="empty-state">Loading…</div>
+          </div>
+        </div>
+
+        <!-- All Users -->
+        <div class="card">
+          <div
+            class="card-title"
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: center;
+            "
+          >
+            <span>All Users</span>
+            <button class="btn btn-secondary btn-sm" onclick="loadUsers()">
+              ↻ Refresh
+            </button>
+          </div>
+
+          <!-- Filter bar -->
+          <div
+            style="
+              display: flex;
+              gap: 10px;
+              align-items: center;
+              flex-wrap: wrap;
+              margin-bottom: 16px;
+            "
+          >
+            <input
+              type="text"
+              id="userSearch"
+              placeholder="Search by email or name…"
+              style="max-width: 280px"
+              oninput="filterUsersTable()"
+            />
+            <select
+              id="userRoleFilter"
+              onchange="filterUsersTable()"
+              style="width: 130px"
+            >
+              <option value="">All roles</option>
+              <option value="user">User</option>
+              <option value="admin">Admin</option>
+            </select>
+            <select
+              id="userStatusFilter"
+              onchange="filterUsersTable()"
+              style="width: 140px"
+            >
+              <option value="">All statuses</option>
+              <option value="approved">Approved</option>
+              <option value="pending">Pending</option>
+            </select>
+          </div>
+
+          <div class="readings-table-wrap">
+            <table id="usersTable">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Status</th>
+                  <th>Registered</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="usersTbody">
+                <tr>
+                  <td colspan="7" class="empty-state">Loading…</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Toast -->
+    <div id="toast"></div>
+
+    <!-- ═══════════════════ JAVASCRIPT ═══════════════════ -->
+    <script>
+        /* ─── THEME TOGGLE ───────────────────────────────────────────── */
+        (function () {
+          if (localStorage.getItem("gs-theme") === "light") {
+            document.documentElement.classList.add("light");
+            // btn not yet in DOM here; set after DOMContentLoaded
+          }
+        })();
+
+        function toggleTheme() {
+          const root = document.documentElement;
+          const btn = document.getElementById("themeBtn");
+          const isLight = root.classList.toggle("light");
+          btn.textContent = isLight ? "☀️" : "🌙";
+          localStorage.setItem("gs-theme", isLight ? "light" : "dark");
+        }
+
+        // Sync button icon to saved preference once DOM is ready
+        document.addEventListener("DOMContentLoaded", function () {
+          if (document.documentElement.classList.contains("light")) {
+            document.getElementById("themeBtn").textContent = "☀️";
+          }
+        });
+
+        /* ─── FIELD DEFINITIONS ─────────────────────────────────────── */
+        const SOIL_FIELDS = [
+          ["N", "Nitrogen (kg/ha)", [100, 350]],
+          ["P", "Phosphorus (kg/ha)", [5, 80]],
+          ["K", "Potassium (kg/ha)", [100, 350]],
+          ["pH", "Soil pH", [5.5, 7.8]],
+          ["Soil_Temp", "Soil Temp (°C)", [10, 40]],
+          ["Soil_Moisture", "Soil Moisture (%)", [20, 100]],
+        ];
+        const ENV_FIELDS = [
+          ["Env_Temp", "Air Temp (°C)", [10, 45]],
+          ["DHT_Humidity", "Air Humidity (%)", [20, 100]],
+          ["MQ135_CO2", "CO₂ (ppm)", [380, 500]],
+          ["MQ135_CO", "CO (ppm)", [0, 10]],
+          ["MQ135_NH3", "NH₃ (ppm)", [0, 10]],
+          ["BMP_Altitude", "Altitude (m)", [0, 1500]],
+          ["BMP_Pressure", "Pressure (hPa)", [900, 1050]],
+          ["Light", "Light (lux)", [10000, 120000]],
+        ];
+
+        const ALL_FIELDS = [...SOIL_FIELDS, ...ENV_FIELDS];
+
+        function buildFieldHTML(name, label, range) {
+          return `
+      <div class="field-group">
+        <label class="form-label">${label} <small>(${range[0]}–${range[1]})</small></label>
+        <div class="input-group">
+          <input type="number" step="any" name="${name}" />
+          <button type="button" class="dice-btn" onclick="randomField('${name}')">🎲</button>
+        </div>
+      </div>`;
+        }
+
+        // Build form inputs
+        document.getElementById("soilInputs").innerHTML = SOIL_FIELDS.map((f) =>
+          buildFieldHTML(...f),
+        ).join("");
+        document.getElementById("envInputs").innerHTML = ENV_FIELDS.map((f) =>
+          buildFieldHTML(...f),
+        ).join("");
+
+        /* ─── RANDOMIZE ──────────────────────────────────────────────── */
+        function randomField(name) {
+          const f = ALL_FIELDS.find((f) => f[0] === name);
+          const el = document.querySelector(`[name="${name}"]`);
+          if (!f || !el) return;
+          const [min, max] = f[2];
+          el.value = (Math.random() * (max - min) + min).toFixed(2);
+        }
+        function randomizeAll() {
+          ALL_FIELDS.forEach(([name]) => randomField(name));
+        }
+
+        /* ─── TABS ────────────────────────────────────────────────────── */
+        function switchTab(id) {
+          document
+            .querySelectorAll(".gs-section")
+            .forEach((s) => s.classList.remove("active"));
+          document
+            .querySelectorAll(".gs-tab")
+            .forEach((t) => t.classList.remove("active"));
+          document.getElementById(`tab-${id}`).classList.add("active");
+          document.querySelectorAll(".gs-tab").forEach((t) => {
+            if (
+              t.textContent.toLowerCase().replace(/\s/g, "") ===
+                id.replace(/\s/g, "") ||
+              t.getAttribute("onclick") === `switchTab('${id}')`
+            ) {
+              t.classList.add("active");
+            }
+          });
+          if (id === "registry") loadRegistry();
+          if (id === "history") loadHistory();
+          if (id === "users") loadUsers();
+        }
+
+        /* ─── TOAST ───────────────────────────────────────────────────── */
+        let toastTimer;
+        function toast(msg, type = "ok") {
+          const el = document.getElementById("toast");
+          el.textContent = msg;
+          el.className = `show toast-${type}`;
+          clearTimeout(toastTimer);
+          toastTimer = setTimeout(() => {
+            el.className = "";
+          }, 3000);
+        }
+
+        /* ─── FETCH SENSOR READINGS ──────────────────────────────────── */
+        function fetchReadings() {
+          const spinner = document.getElementById("fetchSpinner");
+          spinner.style.display = "inline-block";
+
+          fetch("/latest-readings", {
+            headers: {
+              Authorization: "Bearer " + (window._authToken || ""),
+            },
+          })
+            .then((r) => r.json())
+            .then((data) => {
+              const tbody = document.getElementById("readingsTbody");
+              tbody.innerHTML = "";
+              const rows = data.records ? data.records.slice(-3) : [];
+
+              if (rows.length === 0) {
+                tbody.innerHTML =
+                  '<tr><td colspan="15" class="empty-state">No readings available.</td></tr>';
+                return;
+              }
+
+              rows.forEach((row) => {
+                const tr = document.createElement("tr");
+                // columns after index 1 are sensor values
+                const vals = row.slice(2, 17);
+                tr.innerHTML = `
+            <td><button class="btn btn-sm btn-primary" onclick='selectRow(${JSON.stringify(row)})'>Use</button></td>
+            ${vals.map((v) => `<td>${v ?? "—"}</td>`).join("")}`;
+                tbody.appendChild(tr);
+              });
+            })
+            .catch(() => toast("Could not fetch sensor readings", "err"))
+            .finally(() => {
+              spinner.style.display = "none";
+            });
+        }
+
+        /* mapping: sensor col → index in Google Sheets row */
+        const SHEET_MAP = {
+          Env_Temp: 2,
+          BMP_Pressure: 3,
+          BMP_Altitude: 4,
+          Light: 5,
+          DHT_Humidity: 6,
+          MQ135_CO2: 7,
+          MQ135_CO: 8,
+          MQ135_NH3: 9,
+          Soil_Moisture: 10,
+          Soil_Temp: 11,
+          pH: 12,
+          N: 13,
+          P: 14,
+          K: 15,
+        };
+
+        function selectRow(row) {
+          Object.entries(SHEET_MAP).forEach(([field, idx]) => {
+            const el = document.querySelector(`[name="${field}"]`);
+            if (el && row[idx] != null) {
+              el.value = row[idx];
+              el.classList.add("flash-green");
+              setTimeout(() => el.classList.remove("flash-green"), 1000);
+            }
+          });
+          toast("Sensor values loaded into form", "ok");
+        }
+
+        /* ─── SCORE BAR WIDTH ─────────────────────────────────────────── */
+        // RRF scores are tiny (0.02–0.033). Normalise within result set for bar width.
+        function normalisedWidths(scores) {
+          const min = Math.min(...scores);
+          const max = Math.max(...scores);
+          const span = max - min || 1e-6;
+          return scores.map((s) => Math.max(10, ((s - min) / span) * 100));
+        }
+
+        /* ─── PREDICT ─────────────────────────────────────────────────── */
+        document.getElementById("predictForm").addEventListener("submit", (e) => {
+          e.preventDefault();
+          const btn = document.getElementById("submitBtn");
+          const spinner = document.getElementById("submitSpinner");
+          const topK = document.getElementById("topKSelect").value;
+
+          btn.disabled = true;
+          spinner.style.display = "inline-block";
+
+          // close any open explain panel
+          document.getElementById("explainPanel").classList.remove("open");
+
+          const data = Object.fromEntries(new FormData(e.target));
+
+          fetch(`/predict?top_k=${topK}`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + (window._authToken || ""),
+            },
+            body: JSON.stringify(data),
+          })
+            .then((r) => r.json())
+            .then((res) => {
+              if (res.error) {
+                toast(res.error, "err");
+                return;
+              }
+              renderRecommendations(res, data);
+            })
+            .catch(() => toast("Prediction request failed", "err"))
+            .finally(() => {
+              btn.disabled = false;
+              spinner.style.display = "none";
+            });
+        });
+
+        function renderRecommendations(res, inputData) {
+          const recs = res.recommendations || [];
+          const grid = document.getElementById("recGrid");
+          const chip = document.getElementById("recordChip");
+          const card = document.getElementById("resultCard");
+
+          grid.innerHTML = "";
+          card.style.display = "block";
+          card.scrollIntoView({ behavior: "smooth", block: "start" });
+
+          if (recs.length === 0) {
+            grid.innerHTML =
+              '<div class="empty-state">No suitable crops found.</div>';
+            return;
+          }
+
+          // Compute display widths from rrf_score
+          const scores = recs.map((r) => r.rrf_score);
+          const widths = normalisedWidths(scores);
+
+          recs.forEach((item, i) => {
+            const isML = item.source === "ml+cosine";
+            const div = document.createElement("div");
+            div.className = "rec-card";
+            div.style.animationDelay = `${i * 60}ms`;
+            div.innerHTML = `
+        <div class="rec-rank">#${item.rank} · ${item.source}</div>
+        <div class="rec-crop">${item.crop}</div>
+        <div class="rec-score-bar">
+          <div class="rec-score-fill" style="width:${widths[i]}%"></div>
+        </div>
+        <div class="rec-meta">
+          <span class="rec-score-text">rrf ${item.rrf_score.toFixed(5)}</span>
+          <span class="source-badge ${isML ? "source-ml" : "source-cb"}">
+            ${isML ? "ML" : "CB"}
+          </span>
+        </div>
+        <button class="explain-btn" onclick="explainCrop('${item.crop}', this)">
+          ↳ explain
+        </button>`;
+            grid.appendChild(div);
+          });
+
+          // Store input for explain calls
+          window._lastInput = inputData;
+
+          chip.innerHTML = res.record_id
+            ? `<div class="record-chip">record <span>#${res.record_id}</span></div>`
+            : "";
+        }
+
+        /* ─── EXPLAIN ─────────────────────────────────────────────────── */
+        function explainCrop(cropName, btn) {
+          const panel = document.getElementById("explainPanel");
+
+          if (
+            panel.classList.contains("open") &&
+            panel.dataset.crop === cropName
+          ) {
+            panel.classList.remove("open");
+            panel.dataset.crop = "";
+            return;
+          }
+
+          btn.textContent = "↳ loading…";
+          btn.disabled = true;
+
+          const payload = { ...window._lastInput, crop_name: cropName };
+
+          fetch("/explain", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + (window._authToken || ""),
+            },
+            body: JSON.stringify(payload),
+          })
+            .then((r) => r.json())
+            .then((data) => {
+              if (data.error) {
+                toast(data.error, "err");
+                return;
+              }
+              renderExplain(data);
+              panel.classList.add("open");
+              panel.dataset.crop = cropName;
+              panel.scrollIntoView({
+                behavior: "smooth",
+                block: "nearest",
+              });
+            })
+            .catch(() => toast("Explain request failed", "err"))
+            .finally(() => {
+              btn.textContent = "↳ explain";
+              btn.disabled = false;
+            });
+        }
+
+        function renderExplain(data) {
+          document.getElementById("explainTitle").textContent =
+            `${data.crop} — signal breakdown`;
+
+          // Scores summary
+          const scoresDiv = document.getElementById("explainScores");
+          scoresDiv.innerHTML = `
+      ${data.ml_score !== null ? `<div class="explain-score-item"><span class="label">ML ranker</span><span class="value">${data.ml_score}</span></div>` : ""}
+      ${data.cosine_score !== null ? `<div class="explain-score-item"><span class="label">Cosine sim</span><span class="value">${data.cosine_score}</span></div>` : ""}
+      ${data.range_score !== null ? `<div class="explain-score-item"><span class="label">Range compat</span><span class="value">${data.range_score}</span></div>` : ""}
+      <div class="explain-score-item"><span class="label">Source</span><span class="value">${data.source}</span></div>`;
+
+          // Dimension bars
+          const dimsDiv = document.getElementById("explainDims");
+          if (typeof data.dimensions === "string") {
+            dimsDiv.innerHTML = `<p style="font-family:var(--mono);font-size:11px;color:var(--text-muted)">${data.dimensions}</p>`;
+            return;
+          }
+
+          dimsDiv.innerHTML = Object.entries(data.dimensions)
+            .map(([dim, d]) => {
+              const score = d.score ?? 0;
+              const pct = (score * 100).toFixed(0);
+              const envFmt = d.env != null ? (+d.env).toFixed(2) : "N/A";
+              const rangeFmt = d.range ? `${d.range[0]}–${d.range[1]}` : "";
+
+              let colorClass = "score-0";
+              if (score >= 0.9) colorClass = "score-100";
+              else if (score >= 0.7) colorClass = "score-75";
+              else if (score >= 0.45) colorClass = "score-50";
+              else if (score >= 0.2) colorClass = "score-25";
+
+              return `
+        <div class="dim-row">
+          <div class="dim-label">${dim}</div>
+          <div>
+            <div class="dim-bar-wrap">
+              <div class="dim-bar-fill ${colorClass}" style="width:${pct}%"></div>
+            </div>
+            <div style="font-family:var(--mono);font-size:9px;color:var(--text-muted);margin-top:3px">
+              env: ${envFmt} &nbsp;|&nbsp; ideal: ${rangeFmt}
+            </div>
+          </div>
+          <div class="dim-score">${pct}%</div>
+        </div>`;
+            })
+            .join("");
+        }
+
+        /* ─── REGISTER CROP ───────────────────────────────────────────── */
+        document
+          .getElementById("registerForm")
+          .addEventListener("submit", (e) => {
+            e.preventDefault();
+            const btn = document.getElementById("registerBtn");
+            const spinner = document.getElementById("registerSpinner");
+            btn.disabled = true;
+            spinner.style.display = "inline-block";
+
+            const raw = Object.fromEntries(new FormData(e.target));
+            const data = {};
+            for (const [k, v] of Object.entries(raw)) {
+              data[k] = ["crop_name", "alt_bucket", "seasons"].includes(k)
+                ? v
+                : parseFloat(v);
+            }
+
+            fetch("/register_crop", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + (window._authToken || ""),
+              },
+              body: JSON.stringify(data),
+            })
+              .then((r) => r.json())
+              .then((res) => {
+                if (res.error) {
+                  toast(res.error, "err");
+                  return;
+                }
+                toast(
+                  `✓ ${data.crop_name} registered. Catalog: ${res.catalog_size} crops.`,
+                  "ok",
+                );
+                e.target.reset();
+              })
+              .catch(() => toast("Registration failed", "err"))
+              .finally(() => {
+                btn.disabled = false;
+                spinner.style.display = "none";
+              });
+          });
+
+        /* ─── REGISTRY ────────────────────────────────────────────────── */
+        function loadRegistry() {
+          const search = document.getElementById("registrySearch").value;
+          const url = `/crops${search ? `?search=${encodeURIComponent(search)}` : ""}`;
+
+          fetch(url, {
+            headers: {
+              Authorization: "Bearer " + (window._authToken || ""),
+            },
+          })
+            .then((r) => r.json())
+            .then((res) => {
+              const list = document.getElementById("registryList");
+              if (!res.crops || res.crops.length === 0) {
+                list.innerHTML =
+                  '<div class="empty-state">No registered crops yet. Use the "Register Crop" tab to add new ones.</div>';
+                return;
+              }
+
+              list.innerHTML = res.crops
+                .map(
+                  (c) => `
+          <div class="crop-pill" id="pill-${CSS.escape(c.crop_name)}">
+            <div>
+              <div class="crop-pill-name">${c.crop_name}</div>
+              <div class="crop-pill-meta">
+                pH ${c.ph_min}–${c.ph_max} &nbsp;·&nbsp;
+                N/P/K ${c.N_req}/${c.P_req}/${c.K_req} &nbsp;·&nbsp;
+                ${c.seasons} &nbsp;·&nbsp;
+                registered ${c.registered_at.slice(0, 10)}
+              </div>
+            </div>
+            <div class="crop-pill-actions">
+              <span style="font-family:var(--mono);font-size:10px;color:var(--text-muted)">${c.alt_bucket}</span>
+              <button class="btn btn-danger btn-sm" onclick="deleteCrop('${c.crop_name}')">Remove</button>
+            </div>
+          </div>`,
+                )
+                .join("");
+            })
+            .catch(() => toast("Could not load registry", "err"));
+        }
+
+        function deleteCrop(cropName) {
+          if (!confirm(`Remove "${cropName}" from the crop catalog?`)) return;
+
+          fetch(`/crops/${encodeURIComponent(cropName)}`, {
+            method: "DELETE",
+            headers: {
+              Authorization: "Bearer " + (window._authToken || ""),
+            },
+          })
+            .then((r) => r.json())
+            .then((res) => {
+              if (res.error) {
+                toast(res.error, "err");
+                return;
+              }
+              toast(`✓ ${cropName} removed.`, "ok");
+              loadRegistry();
+            })
+            .catch(() => toast("Delete failed", "err"));
+        }
+
+        /* ─── HISTORY ─────────────────────────────────────────────────── */
+        function loadHistory(forceRefresh) {
+          const from = document.getElementById("histFrom").value;
+          const to = document.getElementById("histTo").value;
+          //const params = new URLSearchParams({ limit: 200 }); // fetch more so we can filter client-side
+          if (from) params.set("from", from);
+          if (to) params.set("to", to);
+
+          fetch(`/history`, {
+            headers: { Authorization: "Bearer " + (window._authToken || "") },
+          })
+            .then((r) => r.json())
+            .then((res) => {
+              const list = document.getElementById("historyList");
+
+              // Filter to current user's history only
+              const currentUid = window._currentUid || null;
+              const records = res.records;
+
+              if (records.length === 0) {
+                list.innerHTML =
+                  '<div class="empty-state">No recommendation history found.</div>';
+                return;
+              }
+
+              list.innerHTML = records
+                .map((r) => {
+                  const topCrops = r.recommendations
+                    .slice(0, 3)
+                    .map((x) => x.crop)
+                    .join(", ");
+                  return `
+            <div class="hist-item" onclick="toggleHistDetail(${r.id})">
+              <div class="hist-header">
+                <div>
+                  <div class="hist-id">#${r.id} &nbsp; top-${r.top_k}</div>
+                  <div class="hist-crops">${topCrops}${r.recommendations.length > 3 ? "…" : ""}</div>
+                </div>
+                <div class="hist-time">${r.requested_at.slice(0, 16).replace("T", " ")}</div>
+              </div>
+              <div class="hist-detail" id="hist-detail-${r.id}">
+                <div style="margin-bottom:10px">
+                  <div class="section-label">Recommendations</div>
+                  ${r.recommendations
+                    .map(
+                      (x) =>
+                        `<div style="font-family:var(--mono);font-size:11px;padding:3px 0;color:var(--text)">
+                      <span style="color:var(--text-muted)">#${x.rank}</span>
+                      &nbsp;${x.crop}
+                      &nbsp;<span style="color:var(--accent-dim)">${x.rrf_score}</span>
+                      &nbsp;<span style="color:${x.source === "ml+cosine" ? "var(--green)" : "var(--accent)"}">[${x.source}]</span>
+                    </div>`,
+                    )
+                    .join("")}
+                </div>
+                <div>
+                  <div class="section-label">Input Features</div>
+                  <div class="hist-env-grid">
+                    ${[
+                      "Env_Temp",
+                      "pH",
+                      "N",
+                      "P",
+                      "K",
+                      "Soil_Moisture",
+                      "DHT_Humidity",
+                      "Light",
+                      "season",
+                      "district",
+                    ]
+                      .map((k) =>
+                        r.input_features[k] != null
+                          ? `<div class="hist-env-item">${k} <span>${
+                              typeof r.input_features[k] === "number"
+                                ? r.input_features[k].toFixed(2)
+                                : r.input_features[k]
+                            }</span></div>`
+                          : "",
+                      )
+                      .join("")}
+                  </div>
+                </div>
+              </div>
+            </div>`;
+                })
+                .join("");
+            })
+            .catch(() => toast("Could not load history", "err"));
+        }
+
+        function toggleHistDetail(id) {
+          const el = document.getElementById(`hist-detail-${id}`);
+          el.classList.toggle("open");
+        }
+
+        function clearHistory() {
+          if (
+            !confirm("Delete ALL recommendation history? This cannot be undone.")
+          )
+            return;
+          fetch("/history", {
+            method: "DELETE",
+            headers: {
+              "X-Confirm": "yes",
+              Authorization: "Bearer " + (window._authToken || ""),
+            },
+          })
+            .then((r) => r.json())
+            .then((res) => {
+              toast(res.message || "History cleared", "ok");
+              loadHistory();
+            })
+            .catch(() => toast("Clear failed", "err"));
+        }
+
+        /* ─── USERS TAB ───────────────────────────────────────────── */
+
+        // Raw data cache for client-side filtering
+        window._allUsersCache = [];
+
+        function loadUsers() {
+          // Load pending approvals
+          fetch("/api/pending-users", {
+            headers: { Authorization: "Bearer " + (window._authToken || "") },
+          })
+            .then((r) => r.json())
+            .then((res) => renderPending(res.users || []))
+            .catch(() => toast("Could not load pending users", "err"));
+
+          // Load all users
+          fetch("/api/all-users", {
+            headers: { Authorization: "Bearer " + (window._authToken || "") },
+          })
+            .then((r) => r.json())
+            .then((res) => {
+              window._allUsersCache = res.users || [];
+              renderUsersTable(window._allUsersCache);
+            })
+            .catch(() => toast("Could not load users", "err"));
+        }
+
+        function renderPending(users) {
+          const el = document.getElementById("pendingList");
+          if (!users.length) {
+            el.innerHTML =
+              '<div class="empty-state">No pending approvals. ✓</div>';
+            return;
+          }
+          el.innerHTML = users
+            .map(
+              (u) => `
+            <div class="pending-card" id="pending-${u.uid}">
+              <div class="pending-card-info">
+                <div class="pending-name">${u.display_name || "—"}</div>
+                <div class="pending-email">${u.email}</div>
+                <div class="pending-date">Registered ${u.registered_at.slice(0, 16).replace("T", " ")}</div>
+              </div>
+              <div class="action-row">
+                <button class="btn btn-primary btn-sm" onclick="approveUser('${u.uid}')">
+                  ✓ Approve
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="approveAndMakeAdmin('${u.uid}')">
+                  ✓ Approve as Admin
+                </button>
+              </div>
+            </div>`,
+            )
+            .join("");
+        }
+
+        function renderUsersTable(users) {
+          const tbody = document.getElementById("usersTbody");
+          if (!users.length) {
+            tbody.innerHTML =
+              '<tr><td colspan="7" class="empty-state">No users found.</td></tr>';
+            return;
+          }
+          tbody.innerHTML = users
+            .map(
+              (u, i) => `
+            <tr class="user-row" data-uid="${u.uid}" data-email="${u.email.toLowerCase()}" data-name="${(u.display_name || "").toLowerCase()}" data-role="${u.role}" data-status="${u.status}">
+              <td style="font-family:var(--mono);font-size:12px;color:var(--text-muted)">${i + 1}</td>
+              <td>${u.display_name || '<span style="color:var(--text-dim)">—</span>'}</td>
+              <td style="font-family:var(--mono);font-size:13px">${u.email}</td>
+              <td>
+                <span class="role-badge ${u.role === "admin" ? "role-admin" : "role-user"}" id="role-badge-${u.uid}">
+                  ${u.role}
+                </span>
+              </td>
+              <td>
+                <span class="status-badge ${u.status === "approved" ? "status-approved" : "status-pending"}" id="status-badge-${u.uid}">
+                  ${u.status}
+                </span>
+              </td>
+              <td style="font-family:var(--mono);font-size:12px;color:var(--text-muted)">${u.registered_at.slice(0, 10)}</td>
+              <td>
+                <div class="action-row">
+                  ${
+                    u.status === "pending"
+                      ? `
+                    <button class="btn btn-primary btn-sm" onclick="approveUser('${u.uid}')">Approve</button>
+                  `
+                      : ""
+                  }
+                  ${
+                    u.role === "user"
+                      ? `
+                    <button class="btn btn-secondary btn-sm" onclick="setRole('${u.uid}','admin')">→ Admin</button>
+                  `
+                      : `
+                    <button class="btn btn-secondary btn-sm" onclick="setRole('${u.uid}','user')">→ User</button>
+                  `
+                  }
+                </div>
+              </td>
+            </tr>`,
+            )
+            .join("");
+        }
+
+        function filterUsersTable() {
+          const search = document
+            .getElementById("userSearch")
+            .value.toLowerCase();
+          const roleFilter = document.getElementById("userRoleFilter").value;
+          const statusFilter = document.getElementById("userStatusFilter").value;
+
+          const filtered = window._allUsersCache.filter((u) => {
+            const matchSearch =
+              !search ||
+              u.email.toLowerCase().includes(search) ||
+              (u.display_name || "").toLowerCase().includes(search);
+            const matchRole = !roleFilter || u.role === roleFilter;
+            const matchStatus = !statusFilter || u.status === statusFilter;
+            return matchSearch && matchRole && matchStatus;
+          });
+          renderUsersTable(filtered);
+        }
+
+        function approveUser(uid) {
+          fetch(`/api/approve-user/${uid}`, {
+            method: "POST",
+            headers: { Authorization: "Bearer " + (window._authToken || "") },
+          })
+            .then((r) => r.json())
+            .then((res) => {
+              if (res.error) {
+                toast(res.error, "err");
+                return;
+              }
+              toast("User approved ✓", "ok");
+              loadUsers();
+            })
+            .catch(() => toast("Approve failed", "err"));
+        }
+
+        async function approveAndMakeAdmin(uid) {
+          try {
+            // First approve
+            const r1 = await fetch(`/api/approve-user/${uid}`, {
+              method: "POST",
+              headers: { Authorization: "Bearer " + (window._authToken || "") },
+            }).then((r) => r.json());
+            if (r1.error) {
+              toast(r1.error, "err");
+              return;
+            }
+
+            // Then set role to admin
+            const r2 = await fetch(`/api/set-role/${uid}`, {
+              method: "POST",
+              headers: {
+                Authorization: "Bearer " + (window._authToken || ""),
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({ role: "admin" }),
+            }).then((r) => r.json());
+            if (r2.error) {
+              toast(r2.error, "err");
+              return;
+            }
+
+            toast("Approved and set as Admin ✓", "ok");
+            loadUsers();
+          } catch (e) {
+            toast("Action failed", "err");
+          }
+        }
+
+        function setRole(uid, role) {
+          fetch(`/api/set-role/${uid}`, {
+            method: "POST",
+            headers: {
+              Authorization: "Bearer " + (window._authToken || ""),
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ role }),
+          })
+            .then((r) => r.json())
+            .then((res) => {
+              if (res.error) {
+                toast(res.error, "err");
+                return;
+              }
+              toast(`Role set to '${role}' ✓`, "ok");
+              loadUsers();
+            })
+            .catch(() => toast("Role update failed", "err"));
+        }
+    </script>
+
+    <!-- ═══════════════ FIREBASE AUTH GUARD ═══════════════ -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+      import {
+        getAuth,
+        onAuthStateChanged,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+      // ── Firebase config ── replace with your actual config values ──────────
+      const firebaseConfig = {
+        apiKey: "AIzaSyCTnVJ5BqJHBcqMANCrzZAcM2x_Pc6aLtE",
+        authDomain: "greensense-cf89f.firebaseapp.com",
+        projectId: "greensense-cf89f",
+        storageBucket: "greensense-cf89f.firebasestorage.app",
+        messagingSenderId: "745421882914",
+        appId: "1:745421882914:web:6f49f4efd52f7a6f7bec7b",
+      };
+      // ────────────────────────────────────────────────────────────────────────
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+
+      onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+          window.location.href = "/login";
+          return;
+        }
+
+        try {
+          const token = await user.getIdToken(true);
+          const res = await fetch("/api/user-status", {
+            headers: { Authorization: "Bearer " + token },
+          });
+          const data = await res.json();
+
+          // Only approved admins may access this dashboard
+          if (
+            !data.emailVerified ||
+            data.status !== "approved" ||
+            data.role !== "admin"
+          ) {
+            // Non-admins go to recommendation page; others go to login
+            if (data.status === "approved" && data.role === "user") {
+              window.location.href = "/recommendation";
+            } else {
+              window.location.href = "/login";
+            }
+            return;
+          }
+
+          // Store token and UID globally for API calls
+          window._authToken = token;
+          window._currentUid = user.uid;
+
+          // Show user info in header
+          const info = document.getElementById("userInfo");
+          info.style.display = "flex";
+          document.getElementById("userEmailBadge").textContent =
+            "👤 " + (user.email || "Admin");
+
+          // Show all admin-only tabs
+          document
+            .querySelectorAll(".admin-only")
+            .forEach((el) => (el.style.display = ""));
+
+          // Refresh token before it expires (~55 min)
+          setInterval(
+            async () => {
+              window._authToken = await user.getIdToken(true);
+            },
+            55 * 60 * 1000,
+          );
+        } catch (e) {
+          window.location.href = "/login";
+        }
+      });
+
+      window.doSignOut = async function () {
+        await signOut(auth);
+        window.location.href = "/";
+      };
+    </script>
+  </body>
+</html>

@@ -1,0 +1,1466 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GreenSense — Crop Intelligence</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* ─── TOKENS ─────────────────────────────────────────────── */
+      :root {
+        --bg: #080f0a;
+        --bg-2: #0c1a11;
+        --surface: #0f1e14;
+        --surface-2: #162819;
+        --border: #1e3428;
+        --border-2: #2a4535;
+        --accent: #c8a84b;
+        --accent-dim: #7a6228;
+        --green: #52c47a;
+        --green-dim: #1e4a2d;
+        --text: #ddeae0;
+        --text-muted: #6d907a;
+        --text-dim: #2e4a38;
+        --mono: "IBM Plex Mono", monospace;
+        --sans: "IBM Plex Sans", sans-serif;
+        --serif: "Playfair Display", serif;
+        --radius: 6px;
+      }
+
+      /* ─── RESET ──────────────────────────────────────────────── */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* ─── BACKGROUND ─────────────────────────────────────────── */
+      .bg-grid {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background-image:
+          linear-gradient(var(--border) 1px, transparent 1px),
+          linear-gradient(90deg, var(--border) 1px, transparent 1px);
+        background-size: 48px 48px;
+        opacity: 0.25;
+      }
+      .bg-glow {
+        position: fixed;
+        inset: 0;
+        z-index: 0;
+        pointer-events: none;
+        background:
+          radial-gradient(
+            ellipse 80% 60% at 68% 45%,
+            rgba(30, 74, 45, 0.35) 0%,
+            transparent 65%
+          ),
+          radial-gradient(
+            ellipse 50% 40% at 15% 70%,
+            rgba(14, 30, 18, 0.4) 0%,
+            transparent 60%
+          );
+      }
+
+      /* ─── PAGE LAYOUT ────────────────────────────────────────── */
+      .page {
+        position: relative;
+        z-index: 1;
+        min-height: 100vh;
+        display: grid;
+        grid-template-rows: auto 1fr auto;
+      }
+
+      /* ─── HEADER ─────────────────────────────────────────────── */
+      .site-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 24px 56px;
+        border-bottom: 1px solid var(--border);
+      }
+      .header-brand {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .header-logo {
+        font-family: var(--serif);
+        font-size: 18px;
+        color: var(--accent);
+        letter-spacing: 0.04em;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .logo-dot {
+        width: 6px;
+        height: 6px;
+        background: var(--green);
+        border-radius: 50%;
+        box-shadow: 0 0 10px var(--green);
+        flex-shrink: 0;
+      }
+      .header-tagline {
+        font-family: var(--mono);
+        font-size: 10px;
+        color: var(--text-dim);
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        padding-left: 16px;
+      }
+      .header-nav {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .nav-link {
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
+        text-decoration: none;
+        padding: 8px 18px;
+        border-radius: var(--radius);
+        border: 1px solid transparent;
+        transition: all 0.18s;
+      }
+      .nav-link:hover {
+        color: var(--text);
+        border-color: var(--border-2);
+        background: var(--surface-2);
+      }
+      .nav-link.primary {
+        color: #060d08;
+        background: var(--accent);
+        border-color: var(--accent);
+        font-weight: 500;
+      }
+      .nav-link.primary:hover {
+        background: #d9b85a;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 20px rgba(200, 168, 75, 0.3);
+      }
+
+      /* ─── HERO ───────────────────────────────────────────────── */
+      .hero {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        align-items: center;
+      }
+      .hero-left {
+        padding: 72px 64px 72px 56px;
+      }
+      .hero-right {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 56px 40px 40px;
+        border-left: 1px solid var(--border);
+        height: 100%;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-family: var(--mono);
+        font-size: 11px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--green);
+        margin-bottom: 28px;
+      }
+      .eyebrow-line {
+        width: 28px;
+        height: 1px;
+        background: var(--green);
+        opacity: 0.5;
+      }
+
+      .headline {
+        font-family: var(--serif);
+        font-size: clamp(40px, 4.5vw, 64px);
+        line-height: 1.08;
+        letter-spacing: -0.01em;
+        color: var(--text);
+        margin-bottom: 24px;
+      }
+      .headline em {
+        font-style: italic;
+        color: var(--accent);
+      }
+      .hero-desc {
+        font-size: 15px;
+        line-height: 1.78;
+        color: var(--text-muted);
+        max-width: 440px;
+        margin-bottom: 44px;
+      }
+
+      /* ─── CTA ────────────────────────────────────────────────── */
+      .cta-group {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+        margin-bottom: 56px;
+      }
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 9px;
+        padding: 13px 28px;
+        border-radius: var(--radius);
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 500;
+        letter-spacing: 0.06em;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s;
+        border: 1px solid transparent;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #060d08;
+        border-color: var(--accent);
+      }
+      .btn-primary:hover {
+        background: #d9b85a;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 32px rgba(200, 168, 75, 0.28);
+      }
+      .btn-primary .arrow {
+        transition: transform 0.18s;
+      }
+      .btn-primary:hover .arrow {
+        transform: translateX(4px);
+      }
+      .btn-ghost {
+        background: transparent;
+        color: var(--text-muted);
+        border-color: var(--border-2);
+      }
+      .btn-ghost:hover {
+        color: var(--text);
+        background: var(--surface-2);
+        border-color: var(--text-dim);
+      }
+
+      /* ─── STATS ──────────────────────────────────────────────── */
+      .stats-row {
+        display: flex;
+        gap: 32px;
+        padding-top: 32px;
+        border-top: 1px solid var(--border);
+      }
+      .stat-num {
+        font-family: var(--serif);
+        font-size: 28px;
+        color: var(--text);
+        margin-bottom: 3px;
+      }
+      .stat-label {
+        font-family: var(--mono);
+        font-size: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        color: var(--text-muted);
+      }
+
+      /* ─── ILLUSTRATION ───────────────────────────────────────── */
+      .illustration {
+        width: 100%;
+        max-width: 460px;
+      }
+
+      /* ─── FEATURES ───────────────────────────────────────────── */
+      .features-section {
+        padding: 0 56px 80px;
+      }
+      .features-header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        padding-top: 52px;
+        margin-bottom: 24px;
+        border-top: 1px solid var(--border);
+      }
+      .features-label {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        white-space: nowrap;
+      }
+      .features-rule {
+        flex: 1;
+        height: 1px;
+        background: var(--border);
+      }
+      .features-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1px;
+        background: var(--border);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        overflow: hidden;
+      }
+      .feature {
+        background: var(--surface);
+        padding: 28px 24px 32px;
+        transition: background 0.18s;
+      }
+      .feature:hover {
+        background: var(--surface-2);
+      }
+      .feature-num {
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 0.1em;
+        color: var(--text-dim);
+        margin-bottom: 18px;
+      }
+      .feature-bar {
+        width: 24px;
+        height: 1px;
+        background: var(--green);
+        opacity: 0.45;
+        margin-bottom: 18px;
+        transition:
+          width 0.3s,
+          opacity 0.3s;
+      }
+      .feature:hover .feature-bar {
+        width: 40px;
+        opacity: 0.85;
+      }
+      .feature-title {
+        font-family: var(--serif);
+        font-size: 16px;
+        color: var(--accent);
+        margin-bottom: 10px;
+        line-height: 1.3;
+      }
+      .feature-desc {
+        font-size: 13px;
+        color: var(--text-muted);
+        line-height: 1.68;
+      }
+
+      /* ─── FOOTER ─────────────────────────────────────────────── */
+      .site-footer {
+        padding: 20px 56px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .footer-copy {
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text-dim);
+        letter-spacing: 0.05em;
+      }
+      .footer-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-family: var(--mono);
+        font-size: 11px;
+        color: var(--text-muted);
+      }
+      .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 8px var(--green);
+        animation: pulse 2.4s ease-in-out infinite;
+      }
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.35;
+        }
+      }
+
+      /* ─── ANIMATIONS ─────────────────────────────────────────── */
+      .anim {
+        opacity: 0;
+        transform: translateY(16px);
+        animation: fadeUp 0.65s ease forwards;
+      }
+      @keyframes fadeUp {
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .d1 {
+        animation-delay: 0.08s;
+      }
+      .d2 {
+        animation-delay: 0.2s;
+      }
+      .d3 {
+        animation-delay: 0.32s;
+      }
+      .d4 {
+        animation-delay: 0.44s;
+      }
+      .d5 {
+        animation-delay: 0.56s;
+      }
+      .d6 {
+        animation-delay: 0.68s;
+      }
+
+      .anim-right {
+        opacity: 0;
+        transform: translateX(20px);
+        animation: fadeRight 0.85s ease forwards;
+        animation-delay: 0.28s;
+      }
+      @keyframes fadeRight {
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      /* ─── RESPONSIVE ─────────────────────────────────────────── */
+      @media (max-width: 960px) {
+        .site-header {
+          padding: 20px 28px;
+        }
+        .header-tagline {
+          display: none;
+        }
+        .hero {
+          grid-template-columns: 1fr;
+        }
+        .hero-left {
+          padding: 56px 28px 40px;
+        }
+        .hero-right {
+          display: none;
+        }
+        .features-section {
+          padding: 0 28px 56px;
+        }
+        .features-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .site-footer {
+          padding: 20px 28px;
+        }
+      }
+      @media (max-width: 560px) {
+        .headline {
+          font-size: 34px;
+        }
+        .features-grid {
+          grid-template-columns: 1fr;
+        }
+        .stats-row {
+          gap: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-grid"></div>
+    <div class="bg-glow"></div>
+
+    <div class="page">
+      <!-- HEADER -->
+      <header class="site-header anim d1">
+        <div class="header-brand">
+          <div class="header-logo">
+            <span class="logo-dot"></span>
+            GreenSense
+          </div>
+          <div class="header-tagline">
+            v2 &middot; Hybrid Intelligence Platform
+          </div>
+        </div>
+        <nav class="header-nav">
+          <a href="/register" class="nav-link">Create Account</a>
+          <a href="/login" class="nav-link primary">Sign In &rarr;</a>
+        </nav>
+      </header>
+
+      <!-- HERO -->
+      <section class="hero">
+        <div class="hero-left">
+          <div class="eyebrow anim d2">
+            <span class="eyebrow-line"></span>
+            Precision Agriculture
+          </div>
+
+          <h1 class="headline anim d3">
+            Grow smarter<br />with <em>AI-driven</em><br />crop intelligence
+          </h1>
+
+          <p class="hero-desc anim d4">
+            Real-time soil and atmospheric sensor data feeds a hybrid XGBRanker
+            and cosine-similarity engine — delivering ranked crop
+            recommendations tuned to your exact field conditions.
+          </p>
+
+          <div class="cta-group anim d5">
+            <a href="/login" class="btn btn-primary">
+              Sign In <span class="arrow">&rarr;</span>
+            </a>
+            <a href="/register" class="btn btn-ghost"> Create Account </a>
+          </div>
+
+          <div class="stats-row anim d6">
+            <div>
+              <div class="stat-num">21+</div>
+              <div class="stat-label">ML-trained crops</div>
+            </div>
+            <div>
+              <div class="stat-num">14</div>
+              <div class="stat-label">Sensor channels</div>
+            </div>
+            <div>
+              <div class="stat-num">2</div>
+              <div class="stat-label">Scoring engines</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- BOTANICAL SVG -->
+        <div class="hero-right anim-right">
+          <svg
+            class="illustration"
+            viewBox="0 0 460 560"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <defs>
+              <pattern
+                id="micro"
+                x="0"
+                y="0"
+                width="20"
+                height="20"
+                patternUnits="userSpaceOnUse"
+              >
+                <path
+                  d="M 20 0 L 0 0 0 20"
+                  fill="none"
+                  stroke="#1a2e22"
+                  stroke-width="0.5"
+                />
+              </pattern>
+              <radialGradient id="glow-c" cx="50%" cy="45%" r="50%">
+                <stop offset="0%" stop-color="#52c47a" stop-opacity="0.07" />
+                <stop offset="100%" stop-color="#52c47a" stop-opacity="0" />
+              </radialGradient>
+              <radialGradient id="leaf-g" cx="35%" cy="30%" r="70%">
+                <stop offset="0%" stop-color="#1e4a2d" stop-opacity="0.55" />
+                <stop offset="100%" stop-color="#080f0a" stop-opacity="0.95" />
+              </radialGradient>
+            </defs>
+
+            <!-- BG -->
+            <rect width="460" height="560" fill="url(#micro)" />
+            <rect width="460" height="560" fill="url(#glow-c)" />
+
+            <!-- Outer frame -->
+            <rect
+              x="18"
+              y="18"
+              width="424"
+              height="524"
+              rx="2"
+              stroke="#1e3428"
+              stroke-width="0.75"
+              fill="none"
+            />
+            <rect
+              x="26"
+              y="26"
+              width="408"
+              height="508"
+              rx="1"
+              stroke="#131f18"
+              stroke-width="0.5"
+              fill="none"
+            />
+
+            <!-- Corner brackets -->
+            <path
+              d="M18 52 L18 18 L52 18"
+              stroke="#2a4535"
+              stroke-width="1"
+              fill="none"
+            />
+            <path
+              d="M408 18 L442 18 L442 52"
+              stroke="#2a4535"
+              stroke-width="1"
+              fill="none"
+            />
+            <path
+              d="M18 508 L18 542 L52 542"
+              stroke="#2a4535"
+              stroke-width="1"
+              fill="none"
+            />
+            <path
+              d="M408 542 L442 542 L442 508"
+              stroke="#2a4535"
+              stroke-width="1"
+              fill="none"
+            />
+
+            <!-- Header label -->
+            <text
+              x="34"
+              y="46"
+              font-family="IBM Plex Mono"
+              font-size="8.5"
+              fill="#2a4535"
+              letter-spacing="2"
+            >
+              BOTANICAL / GS-v2 / SPECIMEN
+            </text>
+            <line
+              x1="34"
+              y1="50"
+              x2="210"
+              y2="50"
+              stroke="#1e3428"
+              stroke-width="0.5"
+            />
+
+            <!-- Main stem -->
+            <line
+              x1="230"
+              y1="495"
+              x2="230"
+              y2="98"
+              stroke="#2a4535"
+              stroke-width="1.5"
+            />
+
+            <!-- Root system -->
+            <path
+              d="M230 495 Q198 514 182 534"
+              stroke="#1e3428"
+              stroke-width="1"
+              fill="none"
+            />
+            <path
+              d="M230 495 Q262 512 276 530"
+              stroke="#1e3428"
+              stroke-width="1"
+              fill="none"
+            />
+            <path
+              d="M230 495 Q214 522 210 542"
+              stroke="#1e3428"
+              stroke-width="0.6"
+              fill="none"
+            />
+            <path
+              d="M230 495 Q247 518 250 538"
+              stroke="#1e3428"
+              stroke-width="0.6"
+              fill="none"
+            />
+
+            <!-- Branch lower-left -->
+            <path
+              d="M230 425 Q188 403 158 384"
+              stroke="#2a4535"
+              stroke-width="1"
+              fill="none"
+            />
+            <path
+              d="M158 384 Q120 348 136 306 Q163 336 182 358 Q198 370 158 384Z"
+              fill="url(#leaf-g)"
+              stroke="#2a4535"
+              stroke-width="0.9"
+            />
+            <!-- midrib + veins -->
+            <path
+              d="M158 384 Q149 346 165 312"
+              stroke="#52c47a"
+              stroke-width="0.5"
+              opacity="0.28"
+              fill="none"
+            />
+            <path
+              d="M155 370 Q143 352 148 328"
+              stroke="#52c47a"
+              stroke-width="0.3"
+              opacity="0.18"
+              fill="none"
+            />
+            <path
+              d="M160 356 Q152 344 156 326"
+              stroke="#52c47a"
+              stroke-width="0.3"
+              opacity="0.18"
+              fill="none"
+            />
+
+            <!-- Branch lower-right -->
+            <path
+              d="M230 425 Q270 405 300 386"
+              stroke="#2a4535"
+              stroke-width="1"
+              fill="none"
+            />
+            <path
+              d="M300 386 Q338 349 320 307 Q295 337 276 360 Q261 373 300 386Z"
+              fill="url(#leaf-g)"
+              stroke="#2a4535"
+              stroke-width="0.9"
+            />
+            <path
+              d="M300 386 Q308 348 292 315"
+              stroke="#52c47a"
+              stroke-width="0.5"
+              opacity="0.28"
+              fill="none"
+            />
+            <path
+              d="M303 372 Q312 355 306 333"
+              stroke="#52c47a"
+              stroke-width="0.3"
+              opacity="0.18"
+              fill="none"
+            />
+
+            <!-- Branch mid-left -->
+            <path
+              d="M230 320 Q188 300 162 282"
+              stroke="#2a4535"
+              stroke-width="1"
+              fill="none"
+            />
+            <path
+              d="M162 282 Q122 252 140 210 Q166 240 186 264 Q200 274 162 282Z"
+              fill="url(#leaf-g)"
+              stroke="#2a4535"
+              stroke-width="0.9"
+            />
+            <path
+              d="M162 282 Q153 250 169 218"
+              stroke="#52c47a"
+              stroke-width="0.5"
+              opacity="0.3"
+              fill="none"
+            />
+            <path
+              d="M158 268 Q148 254 152 234"
+              stroke="#52c47a"
+              stroke-width="0.3"
+              opacity="0.18"
+              fill="none"
+            />
+
+            <!-- Branch mid-right -->
+            <path
+              d="M230 320 Q270 302 296 285"
+              stroke="#2a4535"
+              stroke-width="1"
+              fill="none"
+            />
+            <path
+              d="M296 285 Q336 254 316 212 Q291 243 270 266 Q258 276 296 285Z"
+              fill="url(#leaf-g)"
+              stroke="#2a4535"
+              stroke-width="0.9"
+            />
+            <path
+              d="M296 285 Q305 252 288 220"
+              stroke="#52c47a"
+              stroke-width="0.5"
+              opacity="0.3"
+              fill="none"
+            />
+
+            <!-- Branch upper-left (smaller) -->
+            <path
+              d="M230 212 Q196 194 174 176"
+              stroke="#2a4535"
+              stroke-width="0.75"
+              fill="none"
+            />
+            <path
+              d="M174 176 Q146 150 160 120 Q180 148 194 166 Q204 174 174 176Z"
+              fill="url(#leaf-g)"
+              stroke="#1e3428"
+              stroke-width="0.7"
+              opacity="0.75"
+            />
+            <path
+              d="M174 176 Q165 152 178 128"
+              stroke="#52c47a"
+              stroke-width="0.4"
+              opacity="0.2"
+              fill="none"
+            />
+
+            <!-- Branch upper-right (smaller) -->
+            <path
+              d="M230 212 Q264 195 284 178"
+              stroke="#2a4535"
+              stroke-width="0.75"
+              fill="none"
+            />
+            <path
+              d="M284 178 Q312 152 296 122 Q276 150 262 168 Q252 176 284 178Z"
+              fill="url(#leaf-g)"
+              stroke="#1e3428"
+              stroke-width="0.7"
+              opacity="0.75"
+            />
+            <path
+              d="M284 178 Q292 153 278 130"
+              stroke="#52c47a"
+              stroke-width="0.4"
+              opacity="0.2"
+              fill="none"
+            />
+
+            <!-- Terminal bud -->
+            <ellipse
+              cx="230"
+              cy="90"
+              rx="10"
+              ry="14"
+              fill="#0c1a0f"
+              stroke="#2a4535"
+              stroke-width="0.9"
+            />
+            <ellipse
+              cx="230"
+              cy="88"
+              rx="5.5"
+              ry="8"
+              fill="#1a4028"
+              stroke="#52c47a"
+              stroke-width="0.5"
+              opacity="0.45"
+            />
+            <circle cx="230" cy="85" r="2" fill="#52c47a" opacity="0.2" />
+
+            <!-- Centre crosshair -->
+            <circle
+              cx="230"
+              cy="285"
+              r="4"
+              fill="none"
+              stroke="#52c47a"
+              stroke-width="0.75"
+              opacity="0.5"
+            />
+            <circle
+              cx="230"
+              cy="285"
+              r="9"
+              fill="none"
+              stroke="#52c47a"
+              stroke-width="0.35"
+              opacity="0.25"
+            />
+            <line
+              x1="220"
+              y1="285"
+              x2="240"
+              y2="285"
+              stroke="#52c47a"
+              stroke-width="0.5"
+              opacity="0.3"
+            />
+            <line
+              x1="230"
+              y1="275"
+              x2="230"
+              y2="295"
+              stroke="#52c47a"
+              stroke-width="0.5"
+              opacity="0.3"
+            />
+
+            <!-- Measurement lines LEFT -->
+            <line
+              x1="96"
+              y1="384"
+              x2="150"
+              y2="384"
+              stroke="#2a4535"
+              stroke-width="0.5"
+              stroke-dasharray="3 2.5"
+            />
+            <line
+              x1="86"
+              y1="282"
+              x2="154"
+              y2="282"
+              stroke="#2a4535"
+              stroke-width="0.5"
+              stroke-dasharray="3 2.5"
+            />
+            <line
+              x1="96"
+              y1="176"
+              x2="166"
+              y2="176"
+              stroke="#1e3428"
+              stroke-width="0.5"
+              stroke-dasharray="3 2.5"
+            />
+            <line
+              x1="96"
+              y1="384"
+              x2="96"
+              y2="282"
+              stroke="#2a4535"
+              stroke-width="0.5"
+            />
+            <line
+              x1="86"
+              y1="282"
+              x2="86"
+              y2="176"
+              stroke="#1e3428"
+              stroke-width="0.5"
+            />
+            <line
+              x1="93"
+              y1="384"
+              x2="99"
+              y2="384"
+              stroke="#2a4535"
+              stroke-width="0.75"
+            />
+            <line
+              x1="83"
+              y1="282"
+              x2="89"
+              y2="282"
+              stroke="#2a4535"
+              stroke-width="0.75"
+            />
+            <line
+              x1="93"
+              y1="176"
+              x2="99"
+              y2="176"
+              stroke="#1e3428"
+              stroke-width="0.75"
+            />
+            <text
+              x="54"
+              y="387"
+              font-family="IBM Plex Mono"
+              font-size="8"
+              fill="#2a4535"
+              letter-spacing="0.5"
+            >
+              L-01
+            </text>
+            <text
+              x="54"
+              y="285"
+              font-family="IBM Plex Mono"
+              font-size="8"
+              fill="#2a4535"
+              letter-spacing="0.5"
+            >
+              L-02
+            </text>
+            <text
+              x="54"
+              y="179"
+              font-family="IBM Plex Mono"
+              font-size="8"
+              fill="#1e3428"
+              letter-spacing="0.5"
+            >
+              L-03
+            </text>
+
+            <!-- Measurement lines RIGHT -->
+            <line
+              x1="308"
+              y1="386"
+              x2="368"
+              y2="386"
+              stroke="#2a4535"
+              stroke-width="0.5"
+              stroke-dasharray="3 2.5"
+            />
+            <line
+              x1="304"
+              y1="285"
+              x2="374"
+              y2="285"
+              stroke="#2a4535"
+              stroke-width="0.5"
+              stroke-dasharray="3 2.5"
+            />
+            <line
+              x1="292"
+              y1="178"
+              x2="366"
+              y2="178"
+              stroke="#1e3428"
+              stroke-width="0.5"
+              stroke-dasharray="3 2.5"
+            />
+            <line
+              x1="368"
+              y1="386"
+              x2="368"
+              y2="285"
+              stroke="#2a4535"
+              stroke-width="0.5"
+            />
+            <line
+              x1="374"
+              y1="285"
+              x2="374"
+              y2="178"
+              stroke="#1e3428"
+              stroke-width="0.5"
+            />
+            <line
+              x1="365"
+              y1="386"
+              x2="371"
+              y2="386"
+              stroke="#2a4535"
+              stroke-width="0.75"
+            />
+            <line
+              x1="371"
+              y1="285"
+              x2="377"
+              y2="285"
+              stroke="#2a4535"
+              stroke-width="0.75"
+            />
+            <line
+              x1="363"
+              y1="178"
+              x2="369"
+              y2="178"
+              stroke="#1e3428"
+              stroke-width="0.75"
+            />
+            <text
+              x="376"
+              y="387"
+              font-family="IBM Plex Mono"
+              font-size="8"
+              fill="#2a4535"
+              letter-spacing="0.5"
+            >
+              L-01
+            </text>
+            <text
+              x="380"
+              y="285"
+              font-family="IBM Plex Mono"
+              font-size="8"
+              fill="#2a4535"
+              letter-spacing="0.5"
+            >
+              L-02
+            </text>
+            <text
+              x="372"
+              y="179"
+              font-family="IBM Plex Mono"
+              font-size="8"
+              fill="#1e3428"
+              letter-spacing="0.5"
+            >
+              L-03
+            </text>
+
+            <!-- Horizontal axis line -->
+            <line
+              x1="34"
+              y1="285"
+              x2="100"
+              y2="285"
+              stroke="#1e3428"
+              stroke-width="0.5"
+              stroke-dasharray="4 3"
+            />
+            <line
+              x1="360"
+              y1="285"
+              x2="426"
+              y2="285"
+              stroke="#1e3428"
+              stroke-width="0.5"
+              stroke-dasharray="4 3"
+            />
+
+            <!-- Sensor readout panel -->
+            <rect
+              x="34"
+              y="462"
+              width="392"
+              height="64"
+              rx="2"
+              fill="#060d08"
+              opacity="0.7"
+            />
+            <rect
+              x="34"
+              y="462"
+              width="392"
+              height="64"
+              rx="2"
+              stroke="#1e3428"
+              stroke-width="0.75"
+              fill="none"
+            />
+            <text
+              x="46"
+              y="476"
+              font-family="IBM Plex Mono"
+              font-size="8"
+              fill="#2a4535"
+              letter-spacing="2"
+            >
+              LIVE SENSOR DATA
+            </text>
+            <line
+              x1="46"
+              y1="480"
+              x2="418"
+              y2="480"
+              stroke="#1a2e22"
+              stroke-width="0.5"
+            />
+            <!-- Field values -->
+            <text
+              x="46"
+              y="493"
+              font-family="IBM Plex Mono"
+              font-size="8.5"
+              fill="#3d6e50"
+            >
+              N
+            </text>
+            <text
+              x="56"
+              y="493"
+              font-family="IBM Plex Mono"
+              font-size="8.5"
+              fill="#52c47a"
+            >
+              142
+            </text>
+            <text
+              x="92"
+              y="493"
+              font-family="IBM Plex Mono"
+              font-size="8.5"
+              fill="#3d6e50"
+            >
+              P
+            </text>
+            <text
+              x="102"
+              y="493"
+              font-family="IBM Plex Mono"
+              font-size="8.5"
+              fill="#52c47a"
+            >
+              38
+            </text>
+            <text
+              x="130"
+              y="493"
+              font-family="IBM Plex Mono"
+              font-size="8.5"
+              fill="#3d6e50"
+            >
+              K
+            </text>
+            <text
+              x="140"
+              y="493"
+              font-family="IBM Plex Mono"
+              font-size="8.5"
+              fill="#52c47a"
+            >
+              211
+            </text>
+            <text
+              x="176"
+              y="493"
+              font-family="IBM Plex Mono"
+              font-size="8.5"
+              fill="#3d6e50"
+            >
+              pH
+            </text>
+            <text
+              x="194"
+              y="493"
+              font-family="IBM Plex Mono"
+              font-size="8.5"
+              fill="#52c47a"
+            >
+              6.4
+            </text>
+            <text
+              x="222"
+              y="493"
+              font-family="IBM Plex Mono"
+              font-size="8.5"
+              fill="#3d6e50"
+            >
+              TMP
+            </text>
+            <text
+              x="248"
+              y="493"
+              font-family="IBM Plex Mono"
+              font-size="8.5"
+              fill="#52c47a"
+            >
+              27.2
+            </text>
+            <text
+              x="285"
+              y="493"
+              font-family="IBM Plex Mono"
+              font-size="8.5"
+              fill="#3d6e50"
+            >
+              HUM
+            </text>
+            <text
+              x="312"
+              y="493"
+              font-family="IBM Plex Mono"
+              font-size="8.5"
+              fill="#52c47a"
+            >
+              62%
+            </text>
+            <text
+              x="348"
+              y="493"
+              font-family="IBM Plex Mono"
+              font-size="8.5"
+              fill="#3d6e50"
+            >
+              LUX
+            </text>
+            <text
+              x="370"
+              y="493"
+              font-family="IBM Plex Mono"
+              font-size="8.5"
+              fill="#52c47a"
+            >
+              54k
+            </text>
+            <!-- Output rec -->
+            <line
+              x1="46"
+              y1="498"
+              x2="418"
+              y2="498"
+              stroke="#1a2e22"
+              stroke-width="0.5"
+            />
+            <text
+              x="46"
+              y="511"
+              font-family="IBM Plex Mono"
+              font-size="8"
+              fill="#2a4535"
+              letter-spacing="1"
+            >
+              REC #1
+            </text>
+            <text
+              x="92"
+              y="511"
+              font-family="IBM Plex Mono"
+              font-size="8.5"
+              fill="#c8a84b"
+            >
+              Rice
+            </text>
+            <text
+              x="128"
+              y="511"
+              font-family="IBM Plex Mono"
+              font-size="7.5"
+              fill="#7a6228"
+            >
+              rrf 0.02841
+            </text>
+            <text
+              x="200"
+              y="511"
+              font-family="IBM Plex Mono"
+              font-size="8"
+              fill="#1e3428"
+            >
+              &middot;
+            </text>
+            <text
+              x="214"
+              y="511"
+              font-family="IBM Plex Mono"
+              font-size="8"
+              fill="#2a4535"
+              letter-spacing="1"
+            >
+              REC #2
+            </text>
+            <text
+              x="260"
+              y="511"
+              font-family="IBM Plex Mono"
+              font-size="8.5"
+              fill="#c8a84b"
+            >
+              Wheat
+            </text>
+            <text
+              x="302"
+              y="511"
+              font-family="IBM Plex Mono"
+              font-size="7.5"
+              fill="#7a6228"
+            >
+              rrf 0.02655
+            </text>
+            <text
+              x="370"
+              y="511"
+              font-family="IBM Plex Mono"
+              font-size="7.5"
+              fill="#2a4535"
+            >
+              ml+cos
+            </text>
+
+            <!-- Bottom label -->
+            <line
+              x1="34"
+              y1="532"
+              x2="314"
+              y2="532"
+              stroke="#1e3428"
+              stroke-width="0.5"
+            />
+            <text
+              x="34"
+              y="542"
+              font-family="IBM Plex Mono"
+              font-size="8"
+              fill="#1e3428"
+              letter-spacing="1.5"
+            >
+              HYBRID XGBRANKER + COSINE SIMILARITY
+            </text>
+          </svg>
+        </div>
+      </section>
+
+      <!-- FEATURES -->
+      <section class="features-section">
+        <div class="features-header">
+          <span class="features-label">Platform Capabilities</span>
+          <div class="features-rule"></div>
+        </div>
+        <div class="features-grid">
+          <div class="feature anim d2">
+            <div class="feature-num">01</div>
+            <div class="feature-bar"></div>
+            <div class="feature-title">Soil Analysis</div>
+            <div class="feature-desc">
+              NPK, pH, temperature and moisture from live ESP32 field sensors,
+              updated in real-time.
+            </div>
+          </div>
+          <div class="feature anim d3">
+            <div class="feature-num">02</div>
+            <div class="feature-bar"></div>
+            <div class="feature-title">ML + Cosine Scoring</div>
+            <div class="feature-desc">
+              Hybrid XGBRanker fused with cosine-similarity against a curated
+              crop-environment vector catalog.
+            </div>
+          </div>
+          <div class="feature anim d4">
+            <div class="feature-num">03</div>
+            <div class="feature-bar"></div>
+            <div class="feature-title">Crop Registry</div>
+            <div class="feature-desc">
+              Register custom crops beyond the 21-crop ML baseline. Instantly
+              available for content-based scoring.
+            </div>
+          </div>
+          <div class="feature anim d5">
+            <div class="feature-num">04</div>
+            <div class="feature-bar"></div>
+            <div class="feature-title">Recommendation History</div>
+            <div class="feature-desc">
+              Every query persisted with full input logs, ranked outputs and
+              per-dimension compatibility scores.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="site-footer">
+        <span class="footer-copy"
+          >GreenSense &copy; 2025 &mdash; Precision Agriculture
+          Intelligence</span
+        >
+        <div class="footer-status">
+          <span class="status-dot"></span>
+          System Online
+        </div>
+      </footer>
+    </div>
+  </body>
+</html>

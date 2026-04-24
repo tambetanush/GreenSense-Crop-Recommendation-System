@@ -1,0 +1,418 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>GreenSense — Sign In</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --bg: #0c1a11;
+        --surface: #122018;
+        --surface-2: #1a2e22;
+        --border: #2e4e3a;
+        --accent: #c8a84b;
+        --green: #52c47a;
+        --red: #d96a58;
+        --text: #ddeae0;
+        --text-muted: #6d907a;
+        --mono: "IBM Plex Mono", monospace;
+        --sans: "IBM Plex Sans", sans-serif;
+        --serif: "Playfair Display", serif;
+        --radius: 8px;
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--sans);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px 16px;
+      }
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(#1e3428 1px, transparent 1px),
+          linear-gradient(90deg, #1e3428 1px, transparent 1px);
+        background-size: 40px 40px;
+        opacity: 0.35;
+        pointer-events: none;
+        z-index: 0;
+      }
+      .card {
+        position: relative;
+        z-index: 1;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 36px 32px;
+        width: 100%;
+        max-width: 400px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
+      }
+      .logo {
+        font-family: var(--serif);
+        font-size: 26px;
+        color: var(--accent);
+        margin-bottom: 6px;
+      }
+      .subtitle {
+        color: var(--text-muted);
+        font-size: 13px;
+        font-family: var(--mono);
+        margin-bottom: 28px;
+      }
+      .form-group {
+        margin-bottom: 16px;
+      }
+      label {
+        display: block;
+        font-size: 12px;
+        color: var(--text-muted);
+        font-family: var(--mono);
+        margin-bottom: 6px;
+        letter-spacing: 0.05em;
+      }
+      input[type="email"],
+      input[type="password"] {
+        width: 100%;
+        background: var(--surface-2);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 10px 12px;
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 13px;
+        outline: none;
+        transition: border-color 0.18s;
+      }
+      input:focus {
+        border-color: var(--accent);
+      }
+      .btn {
+        width: 100%;
+        padding: 11px;
+        border-radius: var(--radius);
+        font-family: var(--mono);
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        transition: all 0.18s;
+        margin-top: 4px;
+      }
+      .btn-primary {
+        background: var(--accent);
+        color: #0c1a11;
+      }
+      .btn-primary:hover:not(:disabled) {
+        background: #d9b85a;
+      }
+      .btn-primary:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      .btn-link {
+        background: none;
+        border: 1px solid var(--border);
+        color: var(--text-muted);
+        width: 100%;
+        margin-top: 8px;
+      }
+      .btn-link:hover {
+        border-color: var(--accent);
+        color: var(--text);
+      }
+      .msg {
+        border-radius: var(--radius);
+        padding: 11px 14px;
+        font-size: 13px;
+        font-family: var(--mono);
+        margin-bottom: 16px;
+        display: none;
+        line-height: 1.5;
+      }
+      .msg.show {
+        display: block;
+      }
+      .msg-error {
+        background: rgba(217, 106, 88, 0.12);
+        border: 1px solid var(--red);
+        color: var(--red);
+      }
+      .msg-info {
+        background: rgba(200, 168, 75, 0.1);
+        border: 1px solid var(--accent);
+        color: var(--accent);
+      }
+      .msg-ok {
+        background: rgba(82, 196, 122, 0.1);
+        border: 1px solid var(--green);
+        color: var(--green);
+      }
+      .footer-link {
+        text-align: center;
+        margin-top: 20px;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+      .footer-link a {
+        color: var(--accent);
+        text-decoration: none;
+      }
+      .footer-link a:hover {
+        text-decoration: underline;
+      }
+      .divider {
+        height: 1px;
+        background: var(--border);
+        margin: 20px 0;
+      }
+      #pendingBox,
+      #verifyBox {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+      <div class="logo">🌿 GreenSense</div>
+      <div class="subtitle">Sign in to continue</div>
+
+      <!-- Main login form -->
+      <div id="loginForm">
+        <div id="msgBox" class="msg"></div>
+
+        <div class="form-group">
+          <label>Email</label>
+          <input
+            type="email"
+            id="email"
+            placeholder="you@example.com"
+            autocomplete="username"
+          />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input
+            type="password"
+            id="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+          />
+        </div>
+        <button class="btn btn-primary" id="loginBtn" onclick="doLogin()">
+          Sign In →
+        </button>
+      </div>
+
+      <!-- Email not verified state -->
+      <div id="verifyBox">
+        <div class="msg msg-info show">
+          📧 Your email is not verified yet.<br />
+          Please check your inbox and click the verification link.
+        </div>
+        <button class="btn btn-link" onclick="resendVerification()">
+          Resend Verification Email
+        </button>
+        <button class="btn btn-link" onclick="recheckVerification()">
+          I've Verified — Continue
+        </button>
+        <div class="divider"></div>
+        <button class="btn btn-link" onclick="showLogin()">
+          ← Back to Sign In
+        </button>
+      </div>
+
+      <!-- Pending approval state -->
+      <div id="pendingBox">
+        <div class="msg msg-info show">
+          ⏳ Your account is pending admin approval.<br />
+          You will be able to access the system once approved.
+        </div>
+        <button class="btn btn-link" onclick="recheckStatus()">
+          Check Again
+        </button>
+        <div class="divider"></div>
+        <button class="btn btn-link" onclick="doSignOut()">Sign Out</button>
+      </div>
+
+      <div class="footer-link">
+        Don't have an account? <a href="/register">Create one</a>
+      </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+      import {
+        getAuth,
+        signInWithEmailAndPassword,
+        sendEmailVerification,
+        signOut,
+      } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+      // ── Firebase config ── replace with your actual config values ──────────
+      const firebaseConfig = {
+        apiKey: "AIzaSyCTnVJ5BqJHBcqMANCrzZAcM2x_Pc6aLtE",
+        authDomain: "greensense-cf89f.firebaseapp.com",
+        projectId: "greensense-cf89f",
+        storageBucket: "greensense-cf89f.firebasestorage.app",
+        messagingSenderId: "745421882914",
+        appId: "1:745421882914:web:6f49f4efd52f7a6f7bec7b",
+      };
+      // ────────────────────────────────────────────────────────────────────────
+
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+
+      let _currentUser = null;
+
+      function showMsg(text, type = "error") {
+        const el = document.getElementById("msgBox");
+        el.textContent = text;
+        el.className = `msg msg-${type} show`;
+      }
+
+      function setBtn(loading) {
+        const btn = document.getElementById("loginBtn");
+        btn.disabled = loading;
+        btn.textContent = loading ? "Signing in…" : "Sign In →";
+      }
+
+      window.showLogin = function () {
+        document.getElementById("loginForm").style.display = "";
+        document.getElementById("verifyBox").style.display = "none";
+        document.getElementById("pendingBox").style.display = "none";
+      };
+
+      window.doLogin = async function () {
+        const email = document.getElementById("email").value.trim();
+        const password = document.getElementById("password").value;
+        if (!email || !password) {
+          showMsg("Please fill in all fields.");
+          return;
+        }
+
+        setBtn(true);
+        try {
+          const cred = await signInWithEmailAndPassword(auth, email, password);
+          _currentUser = cred.user;
+
+          // Step 1: Check email verification
+          await _currentUser.reload();
+          if (!_currentUser.emailVerified) {
+            document.getElementById("loginForm").style.display = "none";
+            document.getElementById("verifyBox").style.display = "block";
+            setBtn(false);
+            return;
+          }
+
+          // Step 2: Check backend status (pending / approved)
+          await checkStatusAndRedirect(_currentUser);
+        } catch (err) {
+          const msgs = {
+            "auth/user-not-found": "No account found with this email.",
+            "auth/wrong-password": "Incorrect password.",
+            "auth/invalid-credential": "Incorrect email or password.",
+            "auth/too-many-requests":
+              "Too many attempts. Please try again later.",
+          };
+          showMsg(msgs[err.code] || "Sign in failed. Please try again.");
+        }
+        setBtn(false);
+      };
+
+      async function checkStatusAndRedirect(user) {
+        try {
+          const token = await user.getIdToken(true);
+          window._authToken = token; //  ADD THIS
+          const res = await fetch("/api/user-status", {
+            headers: { Authorization: "Bearer " + token },
+          });
+          const data = await res.json();
+
+          if (data.status === "pending") {
+            document.getElementById("loginForm").style.display = "none";
+            document.getElementById("pendingBox").style.display = "block";
+            return;
+          }
+
+          if (data.status === "approved") {
+            // Redirect based on role
+            if (data.role === "admin") {
+              window.location.href = "/dashboard";
+            } else {
+              window.location.href = "/recommendation";
+            }
+
+            return;
+          }
+
+          // not_registered or unknown
+          showMsg("Account not found. Please register first.");
+        } catch (e) {
+          showMsg("Could not verify account status. Please try again.");
+        }
+      }
+
+      window.resendVerification = async function () {
+        if (!_currentUser) {
+          showMsg("Please sign in first.");
+          return;
+        }
+        try {
+          await sendEmailVerification(_currentUser);
+          alert("Verification email sent! Check your inbox.");
+        } catch (e) {
+          alert("Could not send email: " + e.message);
+        }
+      };
+
+      window.recheckVerification = async function () {
+        if (!_currentUser) {
+          window.location.reload();
+          return;
+        }
+        await _currentUser.reload();
+        if (_currentUser.emailVerified) {
+          await checkStatusAndRedirect(_currentUser);
+        } else {
+          alert("Email not yet verified. Please check your inbox.");
+        }
+      };
+
+      window.recheckStatus = async function () {
+        if (!_currentUser) {
+          window.location.reload();
+          return;
+        }
+        await checkStatusAndRedirect(_currentUser);
+      };
+
+      window.doSignOut = async function () {
+        await signOut(auth);
+        window.location.href = "/";
+      };
+
+      // Handle Enter key on password field
+      document.getElementById("password").addEventListener("keydown", (e) => {
+        if (e.key === "Enter") window.doLogin();
+      });
+    </script>
+  </body>
+</html>
