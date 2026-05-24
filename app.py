@@ -37,6 +37,7 @@ from utils import (ALL_INPUT_COLS, NUMERIC_COLS, RobustLocationImputer,
                    normalise_input)
 
 from auth import firebaseConfig
+from ai_explainer import get_ai_explanation
 
 # =============================================================================
 # APP SETUP
@@ -130,6 +131,15 @@ def init_db():
                 role            TEXT    NOT NULL DEFAULT 'user',   -- 'user' | 'admin'
                 status          TEXT    NOT NULL DEFAULT 'pending', -- 'pending' | 'approved'
                 registered_at   TEXT    NOT NULL DEFAULT (datetime('now'))
+            );
+
+            -- Cached AI Explanations
+            CREATE TABLE IF NOT EXISTS ai_explanations (
+                id               INTEGER PRIMARY KEY AUTOINCREMENT,
+                crop_name        TEXT    NOT NULL,
+                sensor_readings  TEXT    NOT NULL, -- JSON blob
+                explanation_json TEXT    NOT NULL, -- JSON blob (Pydantic output)
+                created_at       TEXT    NOT NULL DEFAULT (datetime('now'))
             );
         """)
     print(f"[DB] Initialised at '{DB_PATH}'.")
@@ -721,14 +731,145 @@ def explain():
         if not crop_name:
             return jsonify({"error": "'crop_name' is required."}), 400
 
-        canonical = normalise_input(body)
-        explanation = recommender.explain(canonical, crop_name)
+        input_data = normalise_input(body)
+        explanation = recommender.explain(input_data, crop_name)
+        
+        # --- Check AI Cache ---
+        cached_ai = check_cached_ai_explanation(crop_name, input_data)
 
-        return jsonify(_to_serialisable(explanation))
+        # 3. Return payload
+        explanation["cached_ai_explanation"] = cached_ai
+        
+        return jsonify(explanation)
 
     except Exception:
         traceback.print_exc()
         return jsonify({"error": "Explanation failed. Check server logs."}), 400
+
+# =============================================================================
+# AI EXPLAIN CACHING UTILS
+# =============================================================================
+
+def check_cached_ai_explanation(crop_name: str, current_readings: dict) -> dict | None:
+    """
+    Checks if a cached AI explanation exists for the given crop_name where
+    the cosine similarity between the current readings and the cached readings is > 0.95.
+    Returns the loaded JSON explanation dict if found, else None.
+    """
+    try:
+        with sqlite3.connect(DB_PATH) as conn:
+            conn.row_factory = sqlite3.Row
+            rows = conn.execute("SELECT sensor_readings, explanation_json FROM ai_explanations WHERE crop_name = ?", (crop_name,)).fetchall()
+            
+        if not rows:
+            return None
+            
+        # Build vector for current readings
+        vec_curr = []
+        for col in NUMERIC_COLS:
+            val = current_readings.get(col, 0)
+            try:
+                val = float(val)
+            except (TypeError, ValueError):
+                val = 0.0
+            vec_curr.append(val)
+        
+        vec_curr = np.array(vec_curr)
+        norm_curr = np.linalg.norm(vec_curr)
+        if norm_curr == 0:
+            return None
+            
+        best_sim = -1
+        best_expl = None
+        
+        for row in rows:
+            try:
+                cached_readings = json.loads(row["sensor_readings"])
+            except Exception:
+                continue
+                
+            vec_cached = []
+            for col in NUMERIC_COLS:
+                val = cached_readings.get(col, 0)
+                try:
+                    val = float(val)
+                except (TypeError, ValueError):
+                    val = 0.0
+                vec_cached.append(val)
+                
+            vec_cached = np.array(vec_cached)
+            norm_cached = np.linalg.norm(vec_cached)
+            if norm_cached == 0:
+                continue
+                
+            sim = np.dot(vec_curr, vec_cached) / (norm_curr * norm_cached)
+            
+            if sim > best_sim:
+                best_sim = sim
+                best_expl = row["explanation_json"]
+                
+        if best_sim > 0.95 and best_expl:
+            return json.loads(best_expl)
+            
+    except Exception as e:
+        print(f"[CACHE ERROR] Failed to check AI explanation cache: {e}")
+        
+    return None
+
+
+@app.route("/api/ai-explain", methods=["POST"])
+@verify_firebase_token
+def ai_explain():
+    """
+    Return a natural language explanation of the recommendation using Gemini.
+    
+    POST body (JSON)
+    ----------------
+    {
+      "crop_name": "Grapes",
+      "sensor_readings": { ... },
+      "explainability_output": { ... },
+      "force_refresh": false
+    }
+    """
+    try:
+        body = request.get_json(force=True)
+        crop_name = body.get("crop_name")
+        sensor_readings = body.get("sensor_readings")
+        explainability_output = body.get("explainability_output")
+        force_refresh = body.get("force_refresh", False)
+
+        if not crop_name or not sensor_readings or not explainability_output:
+            return jsonify({"error": "Missing required fields: crop_name, sensor_readings, explainability_output"}), 400
+
+        # Optional: Even if force_refresh is false, double check the cache just in case.
+        # But usually we only hit this endpoint if we need to generate one.
+        if not force_refresh:
+            cached_ai = check_cached_ai_explanation(crop_name, sensor_readings)
+            if cached_ai:
+                return jsonify(cached_ai)
+
+        # Call the Gemini API wrapper
+        ai_response = get_ai_explanation(sensor_readings, explainability_output, crop_name)
+        
+        resp_dict = ai_response.model_dump()
+        
+        # Save to cache
+        try:
+            with _db_cursor() as cur:
+                cur.execute(
+                    "INSERT INTO ai_explanations (crop_name, sensor_readings, explanation_json) VALUES (?, ?, ?)",
+                    (crop_name, json.dumps(sensor_readings), json.dumps(resp_dict))
+                )
+        except Exception as e:
+            print(f"[CACHE WARN] Failed to save AI explanation to DB: {e}")
+
+        # Return the Pydantic model as a dict
+        return jsonify(resp_dict)
+
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": f"AI Explanation failed: {str(e)}"}), 500
 
 
 # =============================================================================
