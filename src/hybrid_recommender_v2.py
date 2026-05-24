@@ -353,7 +353,7 @@ def register_new_crop(
     alt_bucket:   str,
     seasons:      str,
     catalog:      pd.DataFrame = None,
-    persist_path: str = "crop_catalog_updates.json",
+    persist_path: str = "data/crop_catalog_updates.json",
 ) -> pd.DataFrame:
     """
     Add (or overwrite) a crop in the catalog DataFrame.
@@ -398,7 +398,7 @@ def register_new_crop(
 
 def load_registered_crops(
     catalog:      pd.DataFrame = None,
-    persist_path: str = "crop_catalog_updates.json",
+    persist_path: str = "data/crop_catalog_updates.json",
 ) -> pd.DataFrame:
     """
     Reload crops from JSON. Used in the notebook only.
@@ -653,12 +653,12 @@ class HybridCropRecommenderV2:
 # =============================================================================
 
 def save_recommender(rec: HybridCropRecommenderV2,
-                     path: str = "hybrid_recommender_v2.joblib") -> None:
+                     path: str = "models/hybrid_recommender_v2.joblib") -> None:
     joblib.dump(rec, path)
     print(f"[OK] Saved to '{path}'.")
 
 
-def load_recommender(path: str = "hybrid_recommender_v2.joblib"
+def load_recommender(path: str = "models/hybrid_recommender_v2.joblib"
                      ) -> HybridCropRecommenderV2:
     rec = joblib.load(path)
     print(f"[OK] Loaded from '{path}'.")

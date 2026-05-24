@@ -1,6 +1,6 @@
 import sqlite3
 
-DB_PATH = "greensense.db"
+DB_PATH = "data/greensense.db"
 EMAIL = "tanushtambeeng@gmail.com"  # change this
 
 with sqlite3.connect(DB_PATH) as conn:

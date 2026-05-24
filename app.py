@@ -31,13 +31,13 @@ import pandas as pd
 import requests
 from flask import Flask, g, jsonify, render_template, request
 
-from hybrid_recommender_v2 import HybridCropRecommenderV2
-from utils import (ALL_INPUT_COLS, NUMERIC_COLS, RobustLocationImputer,
+from src.hybrid_recommender_v2 import HybridCropRecommenderV2
+from src.utils import (ALL_INPUT_COLS, NUMERIC_COLS, RobustLocationImputer,
                    _null_where, clean_and_clip, feature_engineer,
                    normalise_input)
 
 from auth import firebaseConfig
-from ai_explainer import get_ai_explanation
+from src.ai_explainer import get_ai_explanation
 
 # =============================================================================
 # APP SETUP
@@ -45,11 +45,11 @@ from ai_explainer import get_ai_explanation
 
 app = Flask(__name__)
 
-DB_PATH = os.environ.get("GREENSENSE_DB",    "greensense.db")
+DB_PATH = os.environ.get("GREENSENSE_DB",    "data/greensense.db")
 RECOMMENDER_PATH = os.environ.get(
-    "RECOMMENDER_PATH", "hybrid_recommender_v2.joblib")
+    "RECOMMENDER_PATH", "models/hybrid_recommender_v2.joblib")
 CATALOG_UPDATES = os.environ.get(
-    "CATALOG_UPDATES",  "crop_catalog_updates.json")
+    "CATALOG_UPDATES",  "data/crop_catalog_updates.json")
 
 # =============================================================================
 # DATABASE
@@ -179,7 +179,7 @@ def _sync_db_crops_to_recommender():
         return
 
     # Import here to avoid circular dependency at module level
-    from hybrid_recommender_v2 import register_new_crop
+    from src.hybrid_recommender_v2 import register_new_crop
 
     with sqlite3.connect(DB_PATH) as conn:
         conn.row_factory = sqlite3.Row

@@ -4,7 +4,7 @@ from firebase_admin import auth
 import sqlite3
 import os
 
-DB_PATH = os.environ.get("GREENSENSE_DB", "greensense.db")
+DB_PATH = os.environ.get("GREENSENSE_DB", "data/greensense.db")
 
 
 def _get_user_record(uid: str):

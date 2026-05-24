@@ -122,6 +122,18 @@ Ranked Crop Recommendations
 
 ---
 
+## 🤖 AI Explanations (Gemini API)
+
+GreenSense integrates **Google's Gemini 2.5 Flash** to provide natural language, scientifically accurate explanations of *why* a crop was recommended or discouraged based on the current environmental vectors.
+
+**Key features:**
+- **Pydantic Structured Output:** The LLM strictly responds in JSON format containing a summary, positive/negative key factors, and cautions.
+- **Smart Prompting:** If the suitability score is high, it explains *why* the crop thrives. If the score is low, it shifts to *actionable advice* (e.g., adding fertilizer or waiting for winter).
+- **Aggressive Caching (`ai_explanations` table):** To save on computational costs and latency, the system caches LLM responses. If the exact same crop is requested again with >95% Cosine Similarity on its environmental readings, it instantly returns the cached response instead of calling the API.
+- **API Key Rotation:** Automatically rotates between 3 API keys (`GEMINI_API_KEY_1`, `2`, `3`) with built-in retries to gracefully handle rate limits.
+
+---
+
 ## 🛠️ Tech Stack
 
 ### Hardware
@@ -154,7 +166,7 @@ Ranked Crop Recommendations
 
 <h2>Soil + Environment Analyzer Diagram</h2>
 
-<img src="Soil-Environment Analyzer/ESP32 S3.png" width="700">
+<img src="notebooks/Soil-Environment Analyzer/ESP32 S3.png" width="700">
 
 <h3>Breadboard Implementations</h3>
 
@@ -162,7 +174,7 @@ Ranked Crop Recommendations
   <tr>
     <td align="center" valign="top">
       <img 
-        src="Soil-Environment Analyzer/IMG20251225093429.jpg"
+        src="notebooks/Soil-Environment Analyzer/IMG20251225093429.jpg"
         width="350"
         style="display:block;"
       />
@@ -172,7 +184,7 @@ Ranked Crop Recommendations
     </td>
     <td align="center" valign="top">
       <img 
-        src="Soil-Environment Analyzer/IMG20251225093358.jpg"
+        src="notebooks/Soil-Environment Analyzer/IMG20251225093358.jpg"
         width="300"
         style="display:block;"
       />
@@ -185,7 +197,7 @@ Ranked Crop Recommendations
   <tr>
     <td align="center" valign="top">
       <img
-        src="Soil-Environment Analyzer/IMG20251225093336.jpg"
+        src="notebooks/Soil-Environment Analyzer/IMG20251225093336.jpg"
         width="300"
         style="display:block;"
       />
@@ -195,7 +207,7 @@ Ranked Crop Recommendations
     </td>
     <td align="center" valign="top">
       <img
-        src="Soil-Environment Analyzer/IMG20251225093404.jpg"
+        src="notebooks/Soil-Environment Analyzer/IMG20251225093404.jpg"
         width="300"
         style="display:block;"
       />
@@ -207,57 +219,101 @@ Ranked Crop Recommendations
 </table>
 
 <h3>Final Assembly Testing</h3>
-<img src="Soil-Environment Analyzer/IMG-20251031-WA0018.jpg" width="700">
+<img src="notebooks/Soil-Environment Analyzer/IMG-20251031-WA0018.jpg" width="700">
+
+---
+
+## 📱 Application Walkthrough
+
+<table align="center">
+  <tr>
+    <td align="center" valign="top">
+      <img src="static/Screenshots/1%20landing.png" width="400" />
+      <div style="width:400px; text-align:center; margin-top:6px;"><b>1. Landing Page</b></div>
+    </td>
+    <td align="center" valign="top">
+      <img src="static/Screenshots/2%20login.png" width="400" />
+      <div style="width:400px; text-align:center; margin-top:6px;"><b>2. Login Page</b></div>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <img src="static/Screenshots/3%20dashboard%20plus%20fetch%20readings.png" width="400" />
+      <div style="width:400px; text-align:center; margin-top:6px;"><b>3. Dashboard & Fetch Readings</b></div>
+    </td>
+    <td align="center" valign="top">
+      <img src="static/Screenshots/4%20recommendations.png" width="400" />
+      <div style="width:400px; text-align:center; margin-top:6px;"><b>4. Crop Recommendations</b></div>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <img src="static/Screenshots/5%20explantion.png" width="400" />
+      <div style="width:400px; text-align:center; margin-top:6px;"><b>5. AI Explanation</b></div>
+    </td>
+    <td align="center" valign="top">
+      <img src="static/Screenshots/6%20register%20crop.png" width="400" />
+      <div style="width:400px; text-align:center; margin-top:6px;"><b>6. Register New Crop</b></div>
+    </td>
+  </tr>
+  <tr>
+    <td align="center" valign="top">
+      <img src="static/Screenshots/7%20recommendation%20history.png" width="400" />
+      <div style="width:400px; text-align:center; margin-top:6px;"><b>7. Recommendation History</b></div>
+    </td>
+    <td align="center" valign="top">
+      <img src="static/Screenshots/8%20users.png" width="400" />
+      <div style="width:400px; text-align:center; margin-top:6px;"><b>8. User Management (Admin)</b></div>
+    </td>
+  </tr>
+</table>
 
 ---
 
 ## 📂 Project Structure
 
 ```
-GreenSense/
+├── GreenSense/
 │
 ├── app.py                           # Flask application — all API routes
-├── utils.py                         # Preprocessing, feature engineering, normalise_input()
-├── hybrid_recommender_v2.py         # Hybrid recommender class + RRF fusion engine
-├── test.py                          # Local testing script
-│
 ├── requirements.txt                 # Python dependencies
 ├── LICENSE                          # Project license
 ├── README.md                        # Project documentation
+├── .env                             # Environment variables (Firebase + Gemini Keys)
 │
-├── hybrid_recommender_v2.joblib     # Serialised HybridCropRecommenderV2 (contains
-│                                    #   ranker + preprocessor + mlb + scaler)
-├── best_ranker.joblib               # Trained CatBoostRanker (best performing)
-├── best_model_XGBRanker.joblib      # Trained XGBRanker (fallback)
-├── preprocessing_pipeline.joblib   # Sklearn preprocessing pipeline (standalone backup)
-├── MLB.joblib                       # MultiLabelBinarizer for crop labels (backup)
+├── src/
+│   ├── utils.py                     # Preprocessing, feature engineering, normalise_input()
+│   ├── hybrid_recommender_v2.py     # Hybrid recommender class + RRF fusion engine
+│   └── ai_explainer.py              # Gemini AI explanation logic and caching
 │
-├── greensense.db                    # SQLite database
-│                                    #   ├── registered_crops  (new crop catalog)
-│                                    #   └── recommendation_history
+├── models/
+│   ├── hybrid_recommender_v2.joblib # Serialised HybridCropRecommenderV2
+│   ├── best_ranker.joblib           # Trained CatBoostRanker
+│   ├── best_model_XGBRanker.joblib  # Trained XGBRanker
+│   ├── preprocessing_pipeline.joblib# Sklearn preprocessing pipeline
+│   └── MLB.joblib                   # MultiLabelBinarizer for crop labels
 │
-├── crop_catalog_updates.json        # JSON backup of registered crops
-├── synthetic_crop_data.csv          # Synthetic dataset (6,326 rows, 5 location profiles)
+├── data/
+│   ├── greensense.db                # SQLite database (registry, history, cache, users)
+│   ├── crop_catalog_updates.json    # JSON backup of registered crops
+│   └── synthetic_crop_data.csv      # Synthetic dataset (6,326 rows, 5 location profiles)
 │
-├── Ranker Notebook/
-│   └── greensense-crop-recommendation.ipynb   # Main ML notebook
-│                                              # (data gen → EDA → pipeline →
-│                                              #  ranker training → HPT → hybrid)
+├── scripts/
+│   ├── test.py                      # Local testing script
+│   ├── ble_check.py                 # BLE testing script
+│   ├── make_admin.py                # Admin creation utility
+│   └── resave_joblib.py             # Utility to resave joblib files
 │
-├── Old Models/
-│   └── greensense-ml-pipeline.ipynb           # Archived classification approach
+├── auth/                            # Firebase Authentication Logic
 │
-├── Soil-Environment Analyzer/       # IoT hardware & implementation assets
-│   ├── ESP32 S3.png
-│   ├── IMG-20251031-WA0018.jpg
-│   ├── IMG20251225093336.jpg
-│   ├── IMG20251225093358.jpg
-│   ├── IMG20251225093404.jpg
-│   ├── IMG20251225093429.jpg
-│   └── soil code.ino                # ESP32 firmware
+├── notebooks/                       # Research and training notebooks
+│   ├── Ranker Notebook/             # Main ML notebook
+│   ├── Old Models/                  # Archived classification approach
+│   └── Soil-Environment Analyzer/   # IoT hardware & implementation assets
 │
 ├── templates/
-│   └── index.html                   # Single-page dashboard (4 tabs)
+│   └── index.html                   # Single-page dashboard (User)
+│   └── recommendation.html          # Single-page dashboard (Admin)
 │
 ├── static/
 │   └── style.css
@@ -519,7 +575,36 @@ Light/dark theme toggle is persistent via `localStorage`.
 
 ## 🚀 Running Locally
 
-### 1️⃣ Install Dependencies
+### 1️⃣ Environment Setup
+
+Create a `.env` file in the root directory (you can use `.env.example` as a template). You will need to configure your Firebase Admin credentials and your Gemini API keys. 
+
+**Firebase Setup (Authentication):**
+```env
+FIREBASE_TYPE="service_account"
+FIREBASE_PROJECT_ID="your-project-id"
+FIREBASE_PRIVATE_KEY_ID="your-private-key-id"
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+FIREBASE_CLIENT_EMAIL="firebase-adminsdk-xxx@your-project-id.iam.gserviceaccount.com"
+FIREBASE_CLIENT_ID="1234567890"
+FIREBASE_AUTH_URI="https://accounts.google.com/o/oauth2/auth"
+FIREBASE_TOKEN_URI="https://oauth2.googleapis.com/token"
+FIREBASE_AUTH_PROVIDER_X509_CERT_URL="https://www.googleapis.com/oauth2/v1/certs"
+FIREBASE_CLIENT_X509_CERT_URL="https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-xxx..."
+```
+
+**Gemini API Setup (AI Explanations):**
+The AI Explainer feature supports API key rotation to bypass rate limits. You can provide up to 3 keys:
+```env
+GEMINI_API_KEY_1="your-first-gemini-key"
+GEMINI_API_KEY_2="your-second-gemini-key"
+GEMINI_API_KEY_3="your-third-gemini-key"
+
+# Or just use one fallback key:
+# GEMINI_API_KEY="your-single-key"
+```
+
+### 2️⃣ Install Dependencies
 
 ```bash
 pip install -r requirements.txt
