@@ -47,20 +47,20 @@ GreenSense v2 introduces a **three-signal hybrid engine** that fuses an ML ranke
                     Raw Sensor Input
                           │
           ┌───────────────┼────────────────┐
-          ▼                 ▼                   ▼
-   [Signal 1]         [Signal 2]             [Signal 3]
-   ML Ranker       Cosine Similarity       Range Compat.
-  (CatBoost)      (shared 16-dim          (per-dimension
-  Known crops       vector space)            agronomic
-  only                                   window check)
+          ▼                 ▼              ▼
+   [Signal 1]         [Signal 2]         [Signal 3]
+   ML Ranker       Cosine Similarity    Range Compat.
+  (CatBoost)      (shared 16-dim       (per-dimension
+  Known crops       vector space)         agronomic
+  only                                 window check)
           │               │                │
-          └──── Known ────┘               │
+          └──── Known ────┘                │
           RRF(ML, Cosine)                  │
                │                           │
                │           New crops only  │
                │      RRF(Cosine, Range)───┘
                │                  │
-               └───────────────┘
+               └──────────────────┘
                RRF(known_fused, new_fused)
                           │
                     Final Ranked List
@@ -106,14 +106,14 @@ Preprocessing Pipeline
 (clean_and_clip → RobustLocationImputer → feature_engineer → ColumnTransformer)
         ↓
 ┌──────────────────────────────────────────────────┐
-│         HybridCropRecommenderV2                           │
-│  ┌─────────────┐ ┌────────────┐ ┌─────────────┐   │
-│  │ ML Ranker     │ │  Cosine      │ │   Range        │  │
-│  │ (CatBoost)    │ │ Similarity.  │ │ Compat.        │  │
+│         HybridCropRecommenderV2                  │
+│  ┌─────────────┐ ┌────────────┐ ┌─────────────┐  │
+│  │ ML Ranker   │ │  Cosine    │ │   Range     │  │
+│  │ (CatBoost)  │ │ Similarity.│ │ Compat.     │  │
 │  └──────┬──────┘ └─────┬──────┘ └──────┬──────┘  │
-│           └──────RRF─────┘                 │           │
-│               known_fused          new_fused─┘                 │
-│                       └────RRF────┘                        │
+│         └──────RRF─────┘                │        │
+│              known_fused      new_fused─┘        │
+│                       └────RRF────┘              │
 └──────────────────────────────────────────────────┘
         ↓
 Ranked Crop Recommendations
