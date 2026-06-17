@@ -111,9 +111,9 @@ Preprocessing Pipeline
 │  │ ML Ranker   │ │  Cosine    │ │   Range     │  │
 │  │ (CatBoost)  │ │ Similarity.│ │ Compat.     │  │
 │  └──────┬──────┘ └─────┬──────┘ └──────┬──────┘  │
-│         └──────RRF─────┘                │        │
-│              known_fused      new_fused─┘        │
-│                       └────RRF────┘              │
+│         └──────RRF─────┘               │         │
+│             known_fused      new_fused─┘         │
+│                   └────RRF────┘                  │
 └──────────────────────────────────────────────────┘
         ↓
 Ranked Crop Recommendations
